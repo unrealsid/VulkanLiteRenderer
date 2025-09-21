@@ -46,10 +46,11 @@ file(GLOB_RECURSE GLAD_LIBS_GLOBAL_DIR
         "${GLAD_LIBS_DIR}/*.c"
 )
 
-message(STATUS "Current source files in imgui: ${GLAD_LIBS_GLOBAL_DIR}")
+message(STATUS "Source Dir: " ${CMAKE_SOURCE_DIR})
+message(STATUS "Current source files in libs: ${GLAD_LIBS_GLOBAL_DIR}")
 
 add_library(${GLAD_LIBS} STATIC ${GLAD_LIBS_GLOBAL_DIR})
-target_include_directories(${GLAD_LIBS} PUBLIC ${GLAD_LIBS_GLOBAL_DIR})
+target_include_directories(${GLAD_LIBS} PUBLIC ${GLAD_LIBS_DIR})
 
 target_link_libraries(${GLAD_LIBS} PUBLIC OpenGL::GL)
 
