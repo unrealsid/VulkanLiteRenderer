@@ -11,9 +11,9 @@ namespace core
     class Engine
     {
     public:
-        void create_job(std::function<void(void*)> thread_func, void* thread_params, ThreadStartFlags start_flags);
+        static void create_job(const std::function<void(void*)>& thread_func, void* thread_params, ThreadStartFlags start_flags);
 
     private:
-        static std::vector<std::unique_ptr<threading::JobUtils>> Jobs;
+        static std::vector<std::unique_ptr<Job>> jobs;
     };
 } // core
