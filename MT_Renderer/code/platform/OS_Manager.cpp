@@ -30,7 +30,7 @@ namespace platform
         glfwMakeContextCurrent(window);
     }
 
-    void OS_Manager::load_glad()
+    void OS_Manager::load_opengl()
     {
         // Load OpenGL functions using GLAD
         if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
