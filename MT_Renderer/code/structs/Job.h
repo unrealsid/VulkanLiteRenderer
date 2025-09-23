@@ -5,8 +5,7 @@
 #pragma once
 #include <semaphore>
 #include <thread>
-
-using semaphore = std::counting_semaphore<1>;
+#include "core/Types.h"
 
 struct Job
 {

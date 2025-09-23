@@ -1,9 +1,27 @@
 ﻿//
-// Created by Sid on 9/22/2025.
+// Created by Sid on 9/23/2025.
 //
 
 #include "Application.h"
 
+#include <iostream>
+#include <ostream>
+#include <thread>
+
 namespace core
 {
+    void Application::application_setup()
+    {
+        std::cout << "Application Setup" << std::endl;
+
+        std::this_thread::sleep_for(std::chrono::seconds(3));
+
+        //Start Application update
+        application_update();
+    }
+
+    void Application::application_update()
+    {
+
+    }
 } // core

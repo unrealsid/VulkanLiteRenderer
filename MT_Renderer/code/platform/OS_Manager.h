@@ -13,12 +13,11 @@ namespace platform
    class OS_Manager
     {
     public:
-        explicit OS_Manager()
+        explicit OS_Manager() : window(nullptr), window_creation_params({})
         {
-            window = nullptr;
         }
 
-        void init_window(WindowCreationParams const& window_creation_params);
+        void init_window(WindowCreationParams& creation_params);
         void load_opengl();
         void swap_buffers();
         void poll_events();
@@ -30,5 +29,6 @@ namespace platform
 
     private:
         GLFWwindow* window;
+        WindowCreationParams window_creation_params;
     };
 }

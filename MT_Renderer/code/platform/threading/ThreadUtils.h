@@ -6,19 +6,19 @@
 #include <functional>
 #include <semaphore>
 #include <thread>
+
+#include "core/Types.h"
 #include "enums/ThreadStartFlags.h"
 
 namespace threading
 {
-    using semaphore = std::counting_semaphore<1>;
-
-    class ThreadUtils
+   class ThreadUtils
     {
     public:
-        template<typename... Args>
-        static std::thread create_thread(const std::function<void()>& thread_func, Args&&... thread_params)
+        template<typename Func, typename... Args>
+        static std::thread create_thread(Func&& thread_func, Args&&... thread_params)
         {
-            std::thread thread(thread_func, std::forward<Args>(thread_params)...);
+            std::thread thread(std::forward<Func>(thread_func), std::forward<Args>(thread_params)...);
             thread.detach();
 
             return thread;

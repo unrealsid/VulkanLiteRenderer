@@ -12,22 +12,22 @@
 namespace threading
 {
    class JobUtils
-    {
+   {
     public:
-       template<typename... Args>
-       static Job create_job(const std::function<void()>& thread_func, Args&&... thread_params)
+       template<typename Func, typename... Args>
+       static std::unique_ptr<Job> create_job(Func&& thread_func, Args&&... thread_params)
        {
-           Job job;
-           job.thread = ThreadUtils::create_thread(thread_func, std::forward<Args>(thread_params)...);
+           auto job = std::make_unique<Job>();
 
-           job.semaphore_continue = ThreadUtils::semaphore_create(0);
-           job.semaphore_consume = ThreadUtils::semaphore_create(0);
-           job.semaphore_exit = ThreadUtils::semaphore_create(0);
-           job.semaphore_terminated = ThreadUtils::semaphore_create(0);
+           job->semaphore_continue = ThreadUtils::semaphore_create(0);
+           job->semaphore_consume = ThreadUtils::semaphore_create(0);
+           job->semaphore_exit = ThreadUtils::semaphore_create(0);
+           job->semaphore_terminated = ThreadUtils::semaphore_create(0);
 
-           ThreadUtils::semaphore_wait(job.semaphore_continue.get());
+          //ThreadUtils::semaphore_wait(job.semaphore_continue.get());
+           job->thread = ThreadUtils::create_thread(thread_func, std::forward<Args>(thread_params)...);
 
-           return job;
+           return std::move(job);
        }
     };
 } // threading
