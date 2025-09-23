@@ -24,6 +24,8 @@ namespace platform
         void poll_events();
         void destroy_window();
 
+       void os_update();
+
         [[nodiscard]] GLFWwindow* get_window() const {return window;}
 
     private:

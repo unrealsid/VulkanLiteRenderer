@@ -15,7 +15,14 @@ namespace threading
     class ThreadUtils
     {
     public:
-        static std::thread create_thread(const std::function<void(void*)>& thread_func, void* thread_params, ThreadStartFlags flags);
+        template<typename... Args>
+        static std::thread create_thread(const std::function<void()>& thread_func, Args&&... thread_params)
+        {
+            std::thread thread(thread_func, std::forward<Args>(thread_params)...);
+            thread.detach();
+
+            return thread;
+        }
 
         static std::unique_ptr<semaphore> semaphore_create(uint32_t initial_count);
         static bool semaphore_try_wait(semaphore* semaphore);

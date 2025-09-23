@@ -56,4 +56,9 @@ namespace platform
         glfwDestroyWindow(window);
         glfwTerminate();
     }
+
+    void OS_Manager::os_update()
+    {
+
+    }
 }

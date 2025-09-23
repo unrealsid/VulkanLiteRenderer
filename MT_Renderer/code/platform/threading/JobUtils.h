@@ -6,8 +6,7 @@
 #include <functional>
 #include <semaphore>
 #include <thread>
-
-#include "enums/ThreadStartFlags.h"
+#include "ThreadUtils.h"
 #include "structs/Job.h"
 
 namespace threading
@@ -15,6 +14,20 @@ namespace threading
    class JobUtils
     {
     public:
-        static Job create_job(const std::function<void(void*)>& thread_func, void* thread_params, ThreadStartFlags start_flags);
+       template<typename... Args>
+       static Job create_job(const std::function<void()>& thread_func, Args&&... thread_params)
+       {
+           Job job;
+           job.thread = ThreadUtils::create_thread(thread_func, std::forward<Args>(thread_params)...);
+
+           job.semaphore_continue = ThreadUtils::semaphore_create(0);
+           job.semaphore_consume = ThreadUtils::semaphore_create(0);
+           job.semaphore_exit = ThreadUtils::semaphore_create(0);
+           job.semaphore_terminated = ThreadUtils::semaphore_create(0);
+
+           ThreadUtils::semaphore_wait(job.semaphore_continue.get());
+
+           return job;
+       }
     };
 } // threading

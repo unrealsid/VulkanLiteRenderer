@@ -6,14 +6,6 @@
 
 namespace threading
 {
-    std::thread ThreadUtils::create_thread(const std::function<void(void*)>& thread_func, void* thread_params, ThreadStartFlags flags)
-    {
-        std::thread thread(thread_func, thread_params);
-        thread.detach();
-
-        return thread;
-    }
-
     std::unique_ptr<semaphore> ThreadUtils::semaphore_create(uint32_t initial_count)
     {
         return std::make_unique<semaphore>(initial_count);
