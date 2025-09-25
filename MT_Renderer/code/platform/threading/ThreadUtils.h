@@ -6,9 +6,7 @@
 #include <functional>
 #include <semaphore>
 #include <thread>
-
 #include "core/Types.h"
-#include "enums/ThreadStartFlags.h"
 
 namespace threading
 {
@@ -16,17 +14,21 @@ namespace threading
     {
     public:
         template<typename Func, typename... Args>
-        static std::thread create_thread(Func&& thread_func, Args&&... thread_params)
+        static std::thread create_thread(Func&& thread_func, bool p_start_detached, Args&&... thread_params)
         {
             std::thread thread(std::forward<Func>(thread_func), std::forward<Args>(thread_params)...);
-            thread.detach();
+
+            if (p_start_detached)
+            {
+                thread.detach();
+            }
 
             return thread;
         }
 
-        static std::unique_ptr<semaphore> semaphore_create(uint32_t initial_count);
-        static bool semaphore_try_wait(semaphore* semaphore);
-        static void semaphore_wait(semaphore* semaphore);
-        static void semaphore_post(semaphore* semaphore, uint32_t count);
+        static std::unique_ptr<Semaphore> semaphore_create(uint32_t initial_count);
+        static bool semaphore_try_wait(Semaphore* semaphore);
+        static void semaphore_wait(Semaphore* semaphore);
+        static void semaphore_post(Semaphore* semaphore, uint32_t count);
     };
 }

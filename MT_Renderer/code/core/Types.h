@@ -2,4 +2,4 @@
 #pragma once
 #include <semaphore>
 
-using semaphore = std::counting_semaphore<1>;
+using Semaphore = std::counting_semaphore<1>;

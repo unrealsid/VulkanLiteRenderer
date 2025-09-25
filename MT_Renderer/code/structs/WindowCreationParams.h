@@ -4,7 +4,6 @@
 
 #pragma once
 #include <cstdint>
-#include <string>
 
 struct WindowCreationParams
 {

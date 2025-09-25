@@ -32,17 +32,6 @@ namespace platform
         glfwMakeContextCurrent(window);
     }
 
-    void OS_Manager::load_opengl()
-    {
-        // Load OpenGL functions using GLAD
-        if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-        {
-            std::cerr << "Failed to initialize GLAD\n";
-            glfwTerminate();
-            throw std::runtime_error("Cannot load GLAD");
-        }
-    }
-
     void OS_Manager::swap_buffers()
     {
         glfwSwapBuffers(window);

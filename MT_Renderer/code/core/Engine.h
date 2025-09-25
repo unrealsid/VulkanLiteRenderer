@@ -1,11 +1,12 @@
 ﻿
 #pragma once
 #include <map>
+#include <string>
 #include <vector>
-
-#include "Application.h"
-#include "Renderer.h"
+#include "rendering/Renderer.h"
 #include "platform/threading/JobUtils.h"
+
+struct RenderContext;
 
 namespace core
 {
@@ -19,12 +20,22 @@ namespace core
             return jobs[job_name].get();
         }
 
+        void initialize_application_thread();
+        void initialize_graphics_subsystem();
         void init ();
-        void shutdown ();
+
+        static void update ();
+        static void shutdown ();
+
+        [[nodiscard]] const RenderContext* get_render_context() const { return render_context.get(); }
 
     private:
-        std::unique_ptr<Application> app;
-        std::unique_ptr<Renderer> renderer;
+
+        //RenderContext is shared between Application and Render Threads
+        std::unique_ptr<RenderContext> render_context;
+
         static std::map<std::string, std::unique_ptr<Job>> jobs;
+
+        void render_context_init(uint32_t max_commands);
     };
 } // core

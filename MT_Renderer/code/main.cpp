@@ -21,7 +21,7 @@ int main()
 {
     core::Engine engine;
     engine.init();
-
-    engine.shutdown();
+    core::Engine::update();
+    core::Engine::shutdown();
     return 0;
 }

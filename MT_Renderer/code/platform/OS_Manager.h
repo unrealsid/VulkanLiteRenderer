@@ -18,7 +18,6 @@ namespace platform
         }
 
         void init_window(WindowCreationParams& creation_params);
-        void load_opengl();
         void swap_buffers();
         void poll_events();
         void destroy_window();

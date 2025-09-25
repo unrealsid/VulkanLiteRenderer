@@ -24,8 +24,7 @@ namespace threading
            job->semaphore_exit = ThreadUtils::semaphore_create(0);
            job->semaphore_terminated = ThreadUtils::semaphore_create(0);
 
-          //ThreadUtils::semaphore_wait(job.semaphore_continue.get());
-           job->thread = ThreadUtils::create_thread(thread_func, std::forward<Args>(thread_params)...);
+           job->thread = ThreadUtils::create_thread(thread_func, false, std::forward<Args>(thread_params)...);
 
            return std::move(job);
        }
