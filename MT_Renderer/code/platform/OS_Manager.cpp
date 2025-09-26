@@ -7,7 +7,7 @@
 
 namespace platform
 {
-    void OS_Manager::init_window(WindowCreationParams& creation_params)
+    void OS_Manager::init_window(WindowCreateParams& creation_params)
     {
         if (!glfwInit())
         {

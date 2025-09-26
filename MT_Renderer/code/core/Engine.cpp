@@ -9,7 +9,7 @@
 
 #include "Application.h"
 #include "rendering/Renderer.h"
-#include "../structs/WindowCreationParams.h"
+#include "../structs/WindowCreateParams.h"
 #include "structs/RenderContext.h"
 #include "Config.inl"
 
@@ -42,17 +42,15 @@ namespace core
 
     void Engine::initialize_graphics_subsystem()
     {
-        render_context_init(max_commands);
-
-        WindowCreationParams window_creation_params{};
-        window_creation_params.window_width = window_width;
-        window_creation_params.window_height = window_height;
-        window_creation_params.window_title = window_title;
+        WindowCreateParams window_create_params{};
+        window_create_params.window_width = window_width;
+        window_create_params.window_height = window_height;
+        window_create_params.window_title = window_title;
 
         //Setup graphics thread
-        create_job("rendering", []( WindowCreationParams window_creation_params, RenderContext* p_render_context)
+        create_job("rendering", []( WindowCreateParams window_creation_params, RenderContext* p_render_context)
         {
-            auto renderer = std::make_unique<Renderer>();
+            auto renderer = std::make_unique<renderer::Renderer>();
             auto os_manager = std::make_unique<platform::OS_Manager>();
 
             os_manager->init_window(window_creation_params);
@@ -62,7 +60,7 @@ namespace core
             threading::ThreadUtils::semaphore_post(jobs["rendering"]->semaphore_continue.get(), 1);
 
             renderer->renderer_update(p_render_context);
-        }, window_creation_params, render_context.get());
+        }, window_create_params, render_context.get());
 
         //Wait for the rendering thread to finish initializing
         threading::ThreadUtils::semaphore_wait(jobs["rendering"]->semaphore_continue.get());
@@ -70,6 +68,8 @@ namespace core
 
     void Engine::init()
     {
+        render_context_init(max_commands);
+
         initialize_application_thread();
 
         initialize_graphics_subsystem();

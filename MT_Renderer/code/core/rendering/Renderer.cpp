@@ -5,7 +5,7 @@
 #include "platform/OS_Manager.h"
 #include "structs/RenderContext.h"
 
-namespace core
+namespace core::renderer
 {
     void Renderer::renderer_init(RenderContext* p_render_context, platform::OS_Manager* p_os_manager)
     {

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "structs/WindowCreationParams.h"
+#include "structs/WindowCreateParams.h"
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
@@ -17,7 +17,7 @@ namespace platform
         {
         }
 
-        void init_window(WindowCreationParams& creation_params);
+        void init_window(WindowCreateParams& creation_params);
         void swap_buffers();
         void poll_events();
         void destroy_window();
@@ -28,6 +28,6 @@ namespace platform
 
     private:
         GLFWwindow* window;
-        WindowCreationParams window_creation_params;
+        WindowCreateParams window_creation_params;
     };
 }

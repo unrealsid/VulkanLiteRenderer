@@ -4,9 +4,9 @@
 #include "platform/OS_Manager.h"
 #include "structs/RenderContext.h"
 
-struct WindowCreationParams;
+struct WindowCreateParams;
 
-namespace core
+namespace core::renderer
 {
     class Renderer
     {
