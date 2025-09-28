@@ -13,11 +13,7 @@ namespace core::render_utils
     public:
         RenderBuffer() = default;
 
-        explicit RenderBuffer(uint32_t capacity) : get_pos(0), put_pos(0), capacity(capacity)
-        {
-            this->capacity = capacity;
-            data.reserve(capacity);
-        }
+        explicit RenderBuffer(uint32_t capacity);
 
         void put(const T& item)
         {
@@ -55,4 +51,8 @@ namespace core::render_utils
         std::atomic<uint32_t>  put_pos;
         std::atomic<size_t>    capacity;
     };
+
+    template <typename T>
+    RenderBuffer<T>::RenderBuffer(uint32_t capacity): data(capacity), get_pos(0), put_pos(0), capacity(capacity)
+    {}
 }

@@ -5,13 +5,29 @@
 #pragma once
 #include "structs/RenderContext.h"
 
+using namespace commands;
+
 namespace core
 {
     class Application
     {
     public:
-        RenderContext* render_context;
+        Application(RenderContext* render_context)
+            : render_context(render_context)
+        {
+        }
+
         void application_setup();
         void application_update();
+
+        void setup_triangle();
+        void add_cmd(const RenderCommand& command) const;
+
+        //Commands
+        uint32_t renderer_create_clear_state(const ClearState& clear_state) const;
+
+
+    private:
+        RenderContext* render_context;
     };
 } // core

@@ -6,7 +6,7 @@
 #include "rendering/Renderer.h"
 #include "platform/threading/JobUtils.h"
 
-struct RenderContext;
+struct RenderCommand;
 
 namespace core
 {

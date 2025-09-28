@@ -1,13 +1,10 @@
-﻿//
-// Created by Sid on 9/22/2025.
-//
+﻿#pragma once
 
-#pragma once
-
-#include "RenderCommand.h"
+#include "../enums/RenderCommands.h"
 #include "core/Types.h"
 #include <memory>
 
+#include "RenderCommand.h"
 #include "../core/rendering/render_utils/SlotResources.hpp"
 #include "../core/rendering/render_utils/RenderBuffer.hpp"
 

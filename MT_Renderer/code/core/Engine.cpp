@@ -1,8 +1,4 @@
-﻿//
-// Created by Sid on 9/22/2025.
-//
-
-#include "Engine.h"
+﻿#include "Engine.h"
 
 #include <iostream>
 #include <ostream>
@@ -20,21 +16,19 @@ namespace core
     void Engine::render_context_init(uint32_t max_commands)
     {
         render_context = std::make_unique<RenderContext>(max_commands);
-        render_context->consume_semaphore = std::move(threading::ThreadUtils::semaphore_create(0));
-        render_context->continue_semaphore = std::move(threading::ThreadUtils::semaphore_create(0));
     }
 
     void Engine::initialize_application_thread()
     {
         //Setup application thread
-        create_job("application", [&]()
+        create_job("application", [&](RenderContext* p_render_context)
         {
-            auto application = std::unique_ptr<Application>();
+            auto application = std::make_unique<Application>(p_render_context);
             application->application_setup();
 
             //Application thread finishes
             threading::ThreadUtils::semaphore_post(jobs["application"]->semaphore_continue.get(), 1);
-        });
+        }, render_context.get());
 
         //Wait for the application thread to finish initializing
         threading::ThreadUtils::semaphore_wait(jobs["application"]->semaphore_continue.get());

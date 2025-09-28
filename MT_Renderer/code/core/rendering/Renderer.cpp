@@ -2,17 +2,24 @@
 
 #include <iostream>
 #include <ostream>
+#include "glm/fwd.hpp"
 #include "platform/OS_Manager.h"
 #include "structs/RenderContext.h"
+#include "structs/RenderCommand.h"
 
 namespace core::renderer
 {
+    Renderer::Renderer() : render_context(nullptr)
+    {
+    }
+
     void Renderer::renderer_init(RenderContext* p_render_context, platform::OS_Manager* p_os_manager)
     {
         std::cout << "Renderer Setup" << std::endl;
 
         load_opengl();
         os_manager = p_os_manager;
+        render_context = p_render_context;
     }
 
     void Renderer::load_opengl()

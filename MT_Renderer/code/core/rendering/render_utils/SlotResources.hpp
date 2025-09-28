@@ -36,8 +36,9 @@ namespace core::render_utils
 
         bool free(uint32_t slot_index)
         {
+            // reserved null slot
             if (slot_index == 0)
-                return false; // reserved null slot
+                return false;
 
             auto& slot = slots[slot_index];
             if (slot.flags == ResourceFlags::Free)
