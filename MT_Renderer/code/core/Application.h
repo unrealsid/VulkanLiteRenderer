@@ -26,6 +26,8 @@ namespace core
         //Commands
         uint32_t renderer_create_clear_state(const ClearState& clear_state) const;
 
+        uint32_t renderer_create_raster_state(const RasterStateCreateParams& raster_state_create_params) const;
+
 
     private:
         RenderContext* render_context;

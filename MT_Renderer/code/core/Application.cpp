@@ -21,6 +21,16 @@ namespace core
         };
 
         renderer_create_clear_state(clear_state);
+
+        RasterStateCreateParams rcp
+        {
+            .fill_mode = GL_FILL,
+            .cull_mode = GL_BACK,
+            .front_ccw = GL_CCW,
+            .depth_clip_enable = true
+        };
+
+        renderer_create_raster_state(rcp);
     }
 
     void Application::application_update()
@@ -44,7 +54,23 @@ namespace core
         uint32_t resource_slot = render_context->slot_resources.get_next();
 
         command.command_index = CMD_CREATE_CLEAR_STATE;
-        command.clear_state_params = clear_state;
+        command.command_params = clear_state;
+        command.resource_slot = resource_slot;
+
+        add_cmd(command);
+
+        return resource_slot;
+    }
+
+    uint32_t Application::renderer_create_raster_state(const RasterStateCreateParams& raster_state_create_params) const
+    {
+        RenderCommand command{};
+
+        command.command_index = CMD_CREATE_RASTER_STATE;
+
+        command.command_params = raster_state_create_params;
+
+        uint32_t resource_slot = render_context->slot_resources.get_next();
         command.resource_slot = resource_slot;
 
         add_cmd(command);
