@@ -1,11 +1,11 @@
 #include "vulkanapp/utils/RenderUtils.h"
 #include <iostream>
 #include "VkBootstrap.h"
-#include "structs/engine/EngineContext.h"
+#include "structs/engine/RenderContext.h"
 #include "vulkanapp/DeviceManager.h"
 #include "structs/vulkan/Vk_Image.h"
 
-bool utils::RenderUtils::create_command_pool(const EngineContext& engine_context, VkCommandPool& out_command_pool)
+bool utils::RenderUtils::create_command_pool(const RenderContext& engine_context, VkCommandPool& out_command_pool)
 {
     VkCommandPoolCreateInfo pool_info = {};
     pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -44,7 +44,7 @@ VkBool32 utils::RenderUtils::get_supported_depth_stencil_format(VkPhysicalDevice
     return false;
 }
 
-bool utils::RenderUtils::create_depth_stencil_image(const EngineContext& engine_context, VkExtent2D extents,
+bool utils::RenderUtils::create_depth_stencil_image(const RenderContext& engine_context, VkExtent2D extents,
     VmaAllocator allocator, Vk_Image& depth_image)
 {
     VkImageCreateInfo imageCI{};

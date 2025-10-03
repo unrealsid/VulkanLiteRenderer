@@ -3,7 +3,7 @@
 #include <iostream>
 #include <vulkan/vulkan_core.h>
 
-#include "structs/engine/EngineContext.h"
+#include "structs/engine/RenderContext.h"
 
 
 vulkanapp::SwapchainManager::~SwapchainManager()
@@ -13,7 +13,7 @@ vulkanapp::SwapchainManager::~SwapchainManager()
 
 bool vulkanapp::SwapchainManager::create_swapchain()
 {
-    vkb::SwapchainBuilder swapchain_builder{ engine_context.device_manager->get_device() };
+    vkb::SwapchainBuilder swapchain_builder{ render_context.device_manager->get_device() };
     
     auto swap_ret = swapchain_builder
         .set_old_swapchain(swapchain)
@@ -52,11 +52,11 @@ bool vulkanapp::SwapchainManager::create_swapchain()
 
 bool vulkanapp::SwapchainManager::recreate_swapchain()
 {
-    auto device_manager = engine_context.device_manager.get();
+    auto device_manager = render_context.device_manager.get();
        
     
     // Wait for device to be idle
-    engine_context.dispatch_table.deviceWaitIdle();
+    render_context.dispatch_table.deviceWaitIdle();
 
     // Recreate the swapchain
     if (!create_swapchain())
@@ -76,7 +76,7 @@ void vulkanapp::SwapchainManager::cleanup_image_views()
     {
         if (image_view != VK_NULL_HANDLE)
         {
-            engine_context.dispatch_table.destroyImageView(image_view, nullptr);
+            render_context.dispatch_table.destroyImageView(image_view, nullptr);
         }
     }
     swapchain_image_views.clear();
@@ -86,7 +86,7 @@ void vulkanapp::SwapchainManager::cleanup_images()
 {
     for(auto swapchain_image : swapchain_images)
     {
-        engine_context.dispatch_table.destroyImage(swapchain_image, nullptr);
+        render_context.dispatch_table.destroyImage(swapchain_image, nullptr);
     }
 
     swapchain_images.clear();
@@ -101,6 +101,7 @@ void vulkanapp::SwapchainManager::cleanup()
         //cleanup_image_views();
 
         vkb::destroy_swapchain(swapchain);
+        vkb::destroy_surface(render_context.device_manager->get_instance(), render_context.window_manager->get_surface());
         swapchain = {};
     }
     

@@ -6,7 +6,7 @@
 #include <vma/vk_mem_alloc.h>
 #include <VkBootstrapDispatch.h>
 #include "vulkanapp/utils/MemoryUtils.h"
-#include "structs/engine/EngineContext.h"
+#include "structs/engine/RenderContext.h"
 #include "structs/vulkan/GPU_Buffer.h"
 #include "vulkanapp/DeviceManager.h"
 
@@ -38,7 +38,7 @@ LoadedImageData utils::ImageUtils::load_image_data(const std::string& filePath, 
     return imageData;
 }
 
-Vk_Image utils::ImageUtils::create_texture_image(EngineContext& engine_context, VkCommandPool command_pool, const LoadedImageData& image_data)
+Vk_Image utils::ImageUtils::create_texture_image(RenderContext& engine_context, VkCommandPool command_pool, const LoadedImageData& image_data)
 {
     if (image_data.pixels)
     {
@@ -113,7 +113,7 @@ VkImageCreateInfo utils::ImageUtils::image_create_info(VkFormat image_format, Vk
     return imgInfo;
 }
 
-void utils::ImageUtils::copy_image(EngineContext& engine_context, VkQueue queue, VkCommandPool command_pool, GPU_Buffer srcBuffer, Vk_Image
+void utils::ImageUtils::copy_image(RenderContext& engine_context, VkQueue queue, VkCommandPool command_pool, GPU_Buffer srcBuffer, Vk_Image
                                   dstImage, VkDeviceSize size, VkExtent3D extend)
 {
     VkCommandBufferAllocateInfo allocInfo{};
@@ -196,7 +196,7 @@ void utils::ImageUtils::copy_image(EngineContext& engine_context, VkQueue queue,
     vmaDestroyBuffer(engine_context.device_manager->get_allocator(), srcBuffer.buffer, srcBuffer.allocation);
 }
 
-void utils::ImageUtils::copy_image_to_buffer(EngineContext& engine_context, Vk_Image src_image, GPU_Buffer& dst_buffer, VkCommandBuffer cmd_buffer, VkOffset3D image_offset)
+void utils::ImageUtils::copy_image_to_buffer(RenderContext& engine_context, Vk_Image src_image, GPU_Buffer& dst_buffer, VkCommandBuffer cmd_buffer, VkOffset3D image_offset)
 {
     auto dispatch_table = engine_context.dispatch_table;
     

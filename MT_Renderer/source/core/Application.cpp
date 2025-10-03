@@ -4,6 +4,7 @@ namespace core
 {
     void Application::application_setup()
     {
+
     }
 
     void Application::application_update()

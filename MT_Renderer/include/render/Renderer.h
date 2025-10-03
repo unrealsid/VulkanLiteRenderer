@@ -1,9 +1,10 @@
 ﻿#pragma once
 
 #include <memory>
-#include "platform/OS_Manager.h"
-#include "structs/engine/RenderContext.h"
+#include "platform/WindowManager.h"
+#include "structs/engine/FrameContext.h"
 
+struct RenderContext;
 struct RenderCommand;
 struct WindowCreateParams;
 
@@ -15,12 +16,21 @@ namespace core::renderer
 
         Renderer();
 
-        void renderer_init(RenderContext* p_render_context, platform::OS_Manager* p_os_manager);
-        void renderer_update( RenderContext* p_render_context);
+        void renderer_init(FrameContext* p_frame_context);
+        void renderer_update();
 
     private:
-        static void load_opengl();
-        platform::OS_Manager* os_manager = nullptr;
-        RenderContext* render_context;
+        platform::WindowManager* window_manager = nullptr;
+        FrameContext* frame_context;
+        std::unique_ptr<RenderContext> render_context;
+
+        void init_vulkan();
+
+        void create_window();
+        void create_swapchain() const;
+        void create_device() const;
+        void init_cleanup() const;
+
+        void cleanup();
     };
 }

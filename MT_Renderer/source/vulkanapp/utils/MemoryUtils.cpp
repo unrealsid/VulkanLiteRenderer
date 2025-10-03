@@ -6,7 +6,7 @@
 
 #include "vulkanapp/utils/DescriptorUtils.h"
 #include "vulkanapp/utils/Vk_Utils.h"
-#include "structs/engine/EngineContext.h"
+#include "structs/engine/RenderContext.h"
 #include "structs/vulkan/GPU_Buffer.h"
 #include "vulkanapp/DeviceManager.h"
 
@@ -135,7 +135,7 @@ void utils::MemoryUtils::copy_buffer(vkb::DispatchTable disp, VkQueue queue, VkC
 }
 
 void utils::MemoryUtils::create_vertex_and_index_buffers(
-    EngineContext& engine_context, const std::vector<Vertex>& vertices,
+    RenderContext& engine_context, const std::vector<Vertex>& vertices,
     const std::vector<uint32_t>& indices, VkCommandPool command_pool, GPU_Buffer& out_vertex_buffer, GPU_Buffer&
     out_index_buffer)
 {
@@ -153,7 +153,7 @@ void utils::MemoryUtils::create_vertex_and_index_buffers(
                   VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT |  VMA_ALLOCATION_CREATE_MAPPED_BIT, staging_vertex_buffer);
 
     // Copy Vertex Data to Staging Buffer using VMA mapping
-    assert(vertices.size() != 0, "Vertex Data is empty!");
+    assert(vertices.size() != 0);
     
     void* data;
     vmaMapMemory(device_manager->get_allocator(), staging_vertex_buffer.allocation, &data);

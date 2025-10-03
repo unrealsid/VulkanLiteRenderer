@@ -1,7 +1,6 @@
 ﻿#pragma once
 #include <cstdint>
-
-#include "structs/engine/RenderContext.h"
+#include "structs/engine/FrameContext.h"
 
 using namespace commands;
 
@@ -10,7 +9,7 @@ namespace core
     class Application
     {
     public:
-        explicit Application(RenderContext* render_context)
+        explicit Application(FrameContext* render_context)
             : render_context(render_context)
         {
         }
@@ -23,6 +22,6 @@ namespace core
 
 
     private:
-        RenderContext* render_context;
+        FrameContext* render_context;
     };
 } // core

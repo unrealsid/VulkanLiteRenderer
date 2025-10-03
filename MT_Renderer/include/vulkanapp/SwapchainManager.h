@@ -2,7 +2,7 @@
 
 #include <VkBootstrap.h>
 
-struct EngineContext;
+struct RenderContext;
 
 //Manages the swapchain
 namespace vulkanapp
@@ -11,7 +11,7 @@ namespace vulkanapp
     {
     public:
 
-        SwapchainManager(EngineContext& engine_context) : engine_context(engine_context){} 
+        SwapchainManager(RenderContext& engine_context) : render_context(engine_context){}
         ~SwapchainManager();
         
         bool create_swapchain();
@@ -25,7 +25,7 @@ namespace vulkanapp
         [[nodiscard]] VkExtent2D get_swapchain_extent() const { return swapchain.extent; }
 
     private:
-        EngineContext& engine_context;
+        RenderContext& render_context;
 
         vkb::Swapchain swapchain{};
         std::vector<VkImage> swapchain_images;

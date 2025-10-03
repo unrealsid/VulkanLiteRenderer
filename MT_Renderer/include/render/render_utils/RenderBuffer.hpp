@@ -53,6 +53,5 @@ namespace core::render_utils
     };
 
     template <typename T>
-    RenderBuffer<T>::RenderBuffer(uint32_t capacity): data(capacity), get_pos(0), put_pos(0), capacity(capacity)
-    {}
+    RenderBuffer<T>::RenderBuffer(uint32_t capacity): data(capacity), get_pos(0), put_pos(0), capacity(capacity){}
 }
