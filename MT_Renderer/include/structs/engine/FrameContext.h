@@ -7,15 +7,19 @@
 #include "render/render_utils/RenderBuffer.hpp"
 #include "render/render_utils/SlotResources.hpp"
 
+/*
+ * Stores frame data that is shared between the render and application thread.
+ */
+
 using core::render_utils::RenderBuffer;
 using core::render_utils::SlotResources;
 
 struct FrameContext
 {
     explicit FrameContext(uint32_t max_commands)
-           : render_command_buffer(max_commands),
-             release_command_buffer(1024),
-             slot_resources(2048){}
+           : slot_resources(2048),
+             render_command_buffer(max_commands),
+             release_command_buffer(1024){}
 
     std::unique_ptr<Semaphore> consume_semaphore;
     std::unique_ptr<Semaphore> continue_semaphore;

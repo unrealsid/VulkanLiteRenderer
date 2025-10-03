@@ -5,6 +5,10 @@
 #include "platform/WindowManager.h"
 #include "vulkanapp/DeviceManager.h"
 
+/*
+ * Stores Rendering content. Only used on the Rendering Thread
+ */
+
 struct RenderContext
 {
     std::unique_ptr<platform::WindowManager> window_manager;

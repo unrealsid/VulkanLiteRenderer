@@ -16,7 +16,7 @@ namespace core
 
     void Engine::init_render_context(uint32_t max_commands)
     {
-        render_context = std::make_unique<FrameContext>(max_commands);
+        frame_context = std::make_unique<FrameContext>(max_commands);
     }
 
     void Engine::initialize_application_thread()
@@ -29,7 +29,7 @@ namespace core
 
             //Application thread finishes
             threading::ThreadUtils::semaphore_post(jobs["application"]->semaphore_continue.get(), 1);
-        }, render_context.get());
+        }, frame_context.get());
 
         //Wait for the application thread to finish initializing
         threading::ThreadUtils::semaphore_wait(jobs["application"]->semaphore_continue.get());
@@ -38,16 +38,16 @@ namespace core
     void Engine::initialize_graphics_subsystem()
     {
         //Setup graphics thread
-        create_job("rendering", []( FrameContext* p_render_context)
+        create_job("rendering", []( FrameContext* p_frame_context)
         {
-            auto renderer = std::make_unique<renderer::Renderer>();
-            renderer->renderer_init(p_render_context);
+            const auto renderer = std::make_unique<renderer::Renderer>();
+            renderer->renderer_init(p_frame_context);
 
             //Post the semaphore here so the main thread can resume. We have finished initializing the graphics thread here
             threading::ThreadUtils::semaphore_post(jobs["rendering"]->semaphore_continue.get(), 1);
 
             renderer->renderer_update();
-        }, render_context.get());
+        }, frame_context.get());
 
         //Wait for the rendering thread to finish initializing
         threading::ThreadUtils::semaphore_wait(jobs["rendering"]->semaphore_continue.get());
@@ -61,7 +61,7 @@ namespace core
 
         initialize_graphics_subsystem();
 
-        std::cout << "Engine Setup" << std::endl;
+        std::cout << "\nEngine Setup" << std::endl;
     }
 
     void Engine::update()

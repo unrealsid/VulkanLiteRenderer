@@ -11,7 +11,7 @@ namespace vulkanapp
     class DeviceManager
     {
     public:
-        DeviceManager(RenderContext& engine_context);
+        DeviceManager(RenderContext& p_render_context);
         ~DeviceManager();
         
         bool device_init();
@@ -28,7 +28,7 @@ namespace vulkanapp
         VkQueue graphics_queue;
         VkQueue present_queue;
 
-        VmaAllocator vmaAllocator;
+        VmaAllocator vma_allocator;
 
         RenderContext& render_context;
         
@@ -40,9 +40,9 @@ namespace vulkanapp
         [[nodiscard]] VkQueue get_graphics_queue() const { return graphics_queue; }
         [[nodiscard]] VkQueue get_present_queue() const { return present_queue; }
         [[nodiscard]] VkQueue get_compute_queue() const { return compute_queue; }
-        [[nodiscard]] VmaAllocator get_allocator() const { return vmaAllocator; }
+        [[nodiscard]] VmaAllocator get_allocator() const { return vma_allocator; }
 
-        void set_vma_allocator(VmaAllocator allocator) { vmaAllocator = allocator; }
+        void set_vma_allocator(VmaAllocator allocator) { vma_allocator = allocator; }
     };
 }
 

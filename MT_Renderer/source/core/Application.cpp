@@ -1,10 +1,13 @@
 ﻿#include "core/Application.h"
 
+#include <iostream>
+#include <ostream>
+
 namespace core
 {
     void Application::application_setup()
     {
-
+        std::cout << "Application Setup" << std::endl;
     }
 
     void Application::application_update()

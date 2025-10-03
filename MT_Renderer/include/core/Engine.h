@@ -31,15 +31,11 @@ namespace core
         static void update ();
         static void shutdown ();
 
-        [[nodiscard]] const FrameContext* get_render_context() const { return render_context.get(); }
-        [[nodiscard]] static RenderContext& get_engine_context() { return g_engine_context; }
+        [[nodiscard]] const FrameContext* get_render_context() const { return frame_context.get(); }
 
     private:
         //FrameContext is shared between Application and Render Threads
-        std::unique_ptr<FrameContext> render_context;
-
-        //Global Engine context
-        static RenderContext g_engine_context;
+        std::unique_ptr<FrameContext> frame_context;
 
         static std::map<std::string, std::unique_ptr<Job>> jobs;
 

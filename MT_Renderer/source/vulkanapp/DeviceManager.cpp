@@ -7,9 +7,9 @@
 #include "vulkanapp/VulkanCleanupQueue.h"
 #include "vulkanapp/feature_activator/VulkanFeatureActivator.h"
 
-vulkanapp::DeviceManager::DeviceManager(RenderContext& engine_context): surface(nullptr), compute_queue(nullptr),
+vulkanapp::DeviceManager::DeviceManager(RenderContext& p_render_context): surface(nullptr), compute_queue(nullptr),
                                                                         graphics_queue(nullptr), present_queue(nullptr),
-                                                                        vmaAllocator(nullptr), render_context(engine_context)
+                                                                        vma_allocator(nullptr), render_context(p_render_context)
 {
 }
 
