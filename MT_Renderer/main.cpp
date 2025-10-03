@@ -15,11 +15,22 @@ void processInput(GLFWwindow* window)
         glfwSetWindowShouldClose(window, true);
 }
 
+void setup_triangle()
+{
+    std::cout << "Setup Triangle" << std::endl;
+}
+
+void application_update()
+{
+    std::cout << "Application Update" << std::endl;
+}
+
 int main()
 {
-    core::Engine engine;
+    core::Engine engine(setup_triangle, application_update);
     engine.init();
-    core::Engine::update();
-    core::Engine::shutdown();
+    engine.update();
+    engine.shutdown();
+
     return 0;
 }

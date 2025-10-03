@@ -13,9 +13,7 @@ vulkanapp::DeviceManager::DeviceManager(RenderContext& p_render_context): surfac
 {
 }
 
-vulkanapp::DeviceManager::~DeviceManager()
-{
-}
+vulkanapp::DeviceManager::~DeviceManager()= default;
 
 bool vulkanapp::DeviceManager::device_init()
 {

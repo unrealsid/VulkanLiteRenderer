@@ -14,6 +14,11 @@ namespace core
 {
     std::map<std::string, std::unique_ptr<Job>> Engine::jobs = {};
 
+    Engine::Engine(std::function<void()>&& p_application_init_callback, std::function<void()>&& p_application_update_callback) :
+        frame_context(nullptr),
+        application_init_callback(std::move(p_application_init_callback)),
+        application_update_callback(std::move(p_application_update_callback)){ }
+
     void Engine::init_render_context(uint32_t max_commands)
     {
         frame_context = std::make_unique<FrameContext>(max_commands);
@@ -22,14 +27,17 @@ namespace core
     void Engine::initialize_application_thread()
     {
         //Setup application thread
-        create_job("application", [&](FrameContext* p_render_context)
+        create_job("application", [&](FrameContext* p_render_context, const std::function<void()>& p_application_init_callback, const std::function<void()>& p_application_update_callback)
         {
             auto application = std::make_unique<Application>(p_render_context);
-            application->application_setup();
+            application->application_setup(p_application_init_callback, p_application_update_callback);
 
             //Application thread finishes
             threading::ThreadUtils::semaphore_post(jobs["application"]->semaphore_continue.get(), 1);
-        }, frame_context.get());
+        },
+        frame_context.get(),
+        application_init_callback,
+        application_update_callback);
 
         //Wait for the application thread to finish initializing
         threading::ThreadUtils::semaphore_wait(jobs["application"]->semaphore_continue.get());

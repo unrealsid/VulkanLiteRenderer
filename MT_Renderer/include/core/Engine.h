@@ -17,6 +17,11 @@ namespace core
     class Engine
     {
     public:
+        Engine() = default;
+
+        //Constructor mainly used to pass custom functions to initialize application behavior and application update
+        Engine(std::function<void()>&& p_application_init_callback, std::function<void()>&& p_application_update_callback);
+
         template<typename Func, typename... Args>
         static Job* create_job(const std::string& job_name, Func&& thread_func, Args&&... thread_args)
         {
@@ -25,17 +30,23 @@ namespace core
         }
 
         void initialize_application_thread();
+
         void initialize_graphics_subsystem();
+
         void init ();
 
-        static void update ();
-        static void shutdown ();
+        void update ();
+        void shutdown ();
 
         [[nodiscard]] const FrameContext* get_render_context() const { return frame_context.get(); }
 
     private:
         //FrameContext is shared between Application and Render Threads
         std::unique_ptr<FrameContext> frame_context;
+
+        //Callbacks to be set while setting up the engine
+        std::function<void()> application_init_callback;
+        std::function<void()> application_update_callback;
 
         static std::map<std::string, std::unique_ptr<Job>> jobs;
 
