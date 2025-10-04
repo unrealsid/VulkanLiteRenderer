@@ -55,7 +55,7 @@ if(NOT vk-bootstrap_FOUND)
     FetchContent_MakeAvailable(vk_bootstrap)
 endif()
 
-#5STB
+#5 Add STB
 find_package(STB QUIET)
 if(STB_FOUND)
     message(STATUS "Using STB via find_package")
@@ -70,5 +70,27 @@ if(NOT STB_FOUND)
     message(STATUS "Using STB via FetchContent")
     FetchContent_MakeAvailable(STB)
 endif()
+
+#6. Add moodycamel readerwriter queue
+find_package(RWQueue QUIET)
+if(RWQueue_FOUND)
+    message(STATUS "Using RWQueue via find_package")
+endif ()
+
+if(NOT RWQueue_FOUND)
+    FetchContent_Declare(
+            readerwriterqueue
+            GIT_REPOSITORY    https://github.com/cameron314/readerwriterqueue
+            GIT_TAG           master
+            GIT_SHALLOW TRUE
+            GIT_PROGRESS TRUE
+    )
+
+    message(STATUS "Using readerwriterqueue via FetchContent")
+    FetchContent_MakeAvailable(readerwriterqueue)
+endif ()
+
+
+
 
 

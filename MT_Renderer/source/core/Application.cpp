@@ -29,6 +29,6 @@ namespace core
 
     void Application::add_cmd(const RenderCommand& command) const
     {
-        render_context->render_command_buffer.put(command);
+        render_context->render_command_buffer.try_enqueue(command);
     }
 } // core
