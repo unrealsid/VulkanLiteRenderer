@@ -14,7 +14,7 @@ namespace core
 {
     std::map<std::string, std::unique_ptr<Job>> Engine::jobs = {};
 
-    Engine::Engine(std::function<void()>&& p_application_init_callback, std::function<void()>&& p_application_update_callback) :
+    Engine::Engine(std::function<void(Application*)>&& p_application_init_callback, std::function<void(Application*)>&& p_application_update_callback) :
         frame_context(nullptr),
         application_init_callback(std::move(p_application_init_callback)),
         application_update_callback(std::move(p_application_update_callback)){ }
@@ -27,7 +27,10 @@ namespace core
     void Engine::initialize_application_thread()
     {
         //Setup application thread
-        create_job("application", [&](FrameContext* p_render_context, const std::function<void()>& p_application_init_callback, const std::function<void()>& p_application_update_callback)
+        create_job("application",
+            [&](FrameContext* p_render_context,
+            const std::function<void(Application*)>& p_application_init_callback,
+            const std::function<void(Application*)>& p_application_update_callback)
         {
             auto application = std::make_unique<Application>(p_render_context);
             application->application_setup(p_application_init_callback, p_application_update_callback);

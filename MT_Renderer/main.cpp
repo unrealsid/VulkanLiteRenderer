@@ -1,5 +1,7 @@
 ﻿#include <iostream>
 #include <GLFW/glfw3.h>
+
+#include "core/Application.h"
 #include "include/core/Engine.h"
 
 // Resize callback
@@ -15,12 +17,16 @@ void processInput(GLFWwindow* window)
         glfwSetWindowShouldClose(window, true);
 }
 
-void setup_triangle()
+void setup_triangle(core::Application* application)
 {
     std::cout << "Setup Triangle" << std::endl;
+
+    //Setup clear state
+    ClearState clear_state{glm::vec4(1.0f, 0.5f, .5f, 1.0f), 1.0f, 0};
+    application->clear_state_resource = application->renderer_create_clear_state(clear_state);
 }
 
-void application_update()
+void application_update(core::Application* application)
 {
     std::cout << "Application Update" << std::endl;
 }

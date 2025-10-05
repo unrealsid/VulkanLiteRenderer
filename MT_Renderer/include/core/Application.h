@@ -4,6 +4,7 @@
 
 #include "structs/engine/FrameContext.h"
 
+struct ClearState;
 using namespace commands;
 
 namespace core
@@ -12,19 +13,25 @@ namespace core
     {
     public:
         explicit Application(FrameContext* render_context)
-            : render_context(render_context)
+            : frame_context(render_context)
         {
         }
 
-        void application_setup(const std::function<void()>& p_application_init_callback, const std::function<void()>& p_application_update_callback);
+        void application_setup(const std::function<void(Application*)>& p_application_init_callback, const std::function<void(Application*)>& p_application_update_callback);
         void application_update();
 
-        void add_cmd(const RenderCommand& command) const;
+        //Queue Filling Functions
+        [[nodiscard]] uint32_t renderer_create_clear_state(const ClearState& cs) const;
+
+        uint32_t clear_state_resource = 0;
 
     private:
-        FrameContext* render_context;
+        FrameContext* frame_context;
 
         //Update function
-        std::function<void()> application_update_callback;
+        std::function<void(Application*)> application_update_callback;
+
+        //Adds a command to the queue
+        void add_cmd(const RenderCommand& command) const;
     };
 } // core

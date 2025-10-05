@@ -10,7 +10,7 @@
 #include "render/render_utils/SlotResources.hpp"
 
 /*
- * Stores frame data that is shared between the render and application thread.
+ * Stores frame data shared between the render and application thread.
  */
 
 using core::render_utils::RenderBuffer;
