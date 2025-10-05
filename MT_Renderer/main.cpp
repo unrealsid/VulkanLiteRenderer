@@ -1,21 +1,7 @@
 ﻿#include <iostream>
-#include <GLFW/glfw3.h>
-
 #include "core/Application.h"
 #include "include/core/Engine.h"
 
-// Resize callback
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
-{
-
-}
-
-// ESC key to close window
-void processInput(GLFWwindow* window)
-{
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
-}
 
 void setup_triangle(core::Application* application)
 {
