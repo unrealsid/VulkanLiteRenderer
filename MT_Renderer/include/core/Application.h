@@ -17,13 +17,16 @@ namespace core
         {
         }
 
-        void application_setup(const std::function<void(Application*)>& p_application_init_callback, const std::function<void(Application*)>& p_application_update_callback);
+        void application_setup(const std::function<void(Application*)>& p_application_init_callback,
+                               const std::function<void(Application*)>& p_application_update_callback);
         void application_update();
 
         //Queue Filling Functions
         [[nodiscard]] uint32_t renderer_create_clear_state(const ClearState& cs) const;
+        [[nodiscard]] uint32_t renderer_create_raster_state(const RasterStateCreationParams& rscp) const;
 
         uint32_t clear_state_resource = 0;
+        uint32_t create_raster_state_resource = 0;
 
     private:
         FrameContext* frame_context;

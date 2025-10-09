@@ -20,4 +20,17 @@ namespace core
 
         return resource_slot;
     }
+
+    uint32_t Application::renderer_create_raster_state(const RasterStateCreationParams& rscp) const
+    {
+        RenderCommand command;
+
+        command.command_index = CMD_CREATE_RASTER_STATE;
+        uint32_t resource_slot = frame_context->slot_resources.get_next();
+        command.resource_slot = resource_slot;
+
+        add_cmd(command);
+
+        return resource_slot;
+    }
 }

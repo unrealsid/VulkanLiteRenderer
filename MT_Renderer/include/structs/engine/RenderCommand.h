@@ -19,5 +19,6 @@ struct RenderCommand
     uint64_t frame_index{};
 
     //Additional data
-    std::variant<ClearState> render_data;
+    std::variant<ClearState,
+    RasterStateCreationParams> render_data;
 };
