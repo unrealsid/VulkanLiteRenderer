@@ -44,7 +44,8 @@ namespace core::renderer
             .set_image_layout_transitions_for_active_command_buffer(pass_id, i)
             .setup_attachments(pass_id, i)
             //TODO: Pass function through a param
-            .record_draw_batches([&](){ draw_frame(); });
+            .record_draw_batches([&](){ draw_frame(); })
+            .end_command_buffer_recording(i);
         }
     }
 
@@ -218,6 +219,30 @@ namespace core::renderer
     Renderer& Renderer::record_draw_batches(const std::function<void()>& func)
     {
         func();
+        return *this;
+    }
+
+    Renderer& Renderer::end_command_buffer_recording(uint32_t image)
+    {
+        render_context->dispatch_table.cmdEndRenderingKHR(*active_command_buffer);
+
+        utils::ImageUtils::image_layout_transition
+        (
+             *active_command_buffer,                            // Command buffer
+             render_context->swapchain_manager->get_swapchain().get_images().value()[image],    // Swapchain image
+             VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, // Source pipeline stage
+             VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,     // Destination pipeline stage
+             VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,     // Source access mask
+             0,                                        // Destination access mask
+             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, // Old layout
+             VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,          // New layout
+              VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 });
+
+        if (render_context->dispatch_table.endCommandBuffer(command_buffers[i]) != VK_SUCCESS)
+        {
+            std::cout << "failed to record command buffer\n";
+        }
+
         return *this;
     }
 

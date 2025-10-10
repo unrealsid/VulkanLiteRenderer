@@ -42,6 +42,8 @@ namespace core::renderer
 
         Renderer& record_draw_batches(const std::function<void()>& func);
 
+        Renderer& end_command_buffer_recording(uint32_t image);
+
     private:
         platform::WindowManager* window_manager = nullptr;
         FrameContext* frame_context;
