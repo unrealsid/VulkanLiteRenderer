@@ -1,4 +1,5 @@
 #pragma once
+#include <vector>
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan_core.h>
 
@@ -13,6 +14,10 @@ namespace utils
     {
     public:
         static bool create_command_pool(const RenderContext& engine_context, VkCommandPool& out_command_pool);
+
+        static bool allocate_command_buffers(const RenderContext& render_context, VkCommandPool command_pool, std::vector<VkCommandBuffer>& command_buffers);
+
+        static bool allocate_command_buffer(const RenderContext& render_context, VkCommandPool command_pool, VkCommandBuffer& command_buffer);
 
         static VkBool32 get_supported_depth_stencil_format(VkPhysicalDevice physical_device, VkFormat* depth_stencil_format);
 

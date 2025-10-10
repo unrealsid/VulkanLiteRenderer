@@ -21,6 +21,37 @@ bool utils::RenderUtils::create_command_pool(const RenderContext& engine_context
     return true;
 }
 
+bool utils::RenderUtils::allocate_command_buffers(const RenderContext& render_context,
+                                                  VkCommandPool command_pool, std::vector<VkCommandBuffer>& command_buffers)
+{
+    VkCommandBufferAllocateInfo allocInfo = {};
+    allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    allocInfo.commandPool = command_pool;
+    allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    allocInfo.commandBufferCount = static_cast<uint32_t>(command_buffers.size());
+
+    if (render_context.dispatch_table.allocateCommandBuffers(&allocInfo, command_buffers.data()) != VK_SUCCESS)
+    {
+        return false;
+    }
+    return true;
+}
+
+bool utils::RenderUtils::allocate_command_buffer(const RenderContext& render_context, VkCommandPool command_pool, VkCommandBuffer& command_buffer)
+{
+    VkCommandBufferAllocateInfo allocInfo = {};
+    allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    allocInfo.commandPool = command_pool;
+    allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    allocInfo.commandBufferCount = 1;
+
+    if (render_context.dispatch_table.allocateCommandBuffers(&allocInfo, &command_buffer) != VK_SUCCESS)
+    {
+        return false;
+    }
+    return true;
+}
+
 VkBool32 utils::RenderUtils::get_supported_depth_stencil_format(VkPhysicalDevice physical_device, VkFormat* depth_stencil_format)
 {
     std::vector formatList =

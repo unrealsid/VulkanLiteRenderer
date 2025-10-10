@@ -23,10 +23,12 @@ namespace core::renderer
         });
     }
 
-    void Renderer::create_swapchain() const
+    void Renderer::create_swapchain()
     {
         render_context->swapchain_manager = std::make_unique<vulkanapp::SwapchainManager>(*render_context);
         render_context->swapchain_manager->create_swapchain();
+
+        max_frames_in_flight = render_context->swapchain_manager->get_swapchain().image_count;
     }
 
     void Renderer::create_device() const

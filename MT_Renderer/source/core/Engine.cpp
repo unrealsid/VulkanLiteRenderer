@@ -21,7 +21,7 @@ namespace core
 
     void Engine::init_render_context(uint32_t max_commands)
     {
-        frame_context = std::make_unique<FrameContext>(max_commands);
+        frame_context = std::make_unique<FrameContext>();
     }
 
     void Engine::initialize_application_thread()
