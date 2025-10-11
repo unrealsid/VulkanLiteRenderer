@@ -306,7 +306,6 @@ void  utils::ImageUtils::image_layout_transition(VkCommandBuffer command_buffer,
     VkAccessFlags dst_access_mask, VkImageLayout old_layout, VkImageLayout new_layout,
     const VkImageSubresourceRange& subresource_range)
 {
-    // Define an image memory barrier
     VkImageMemoryBarrier barrier{};
     barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
     barrier.oldLayout = old_layout;       // Previous image layout

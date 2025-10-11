@@ -1,12 +1,12 @@
 cmake_minimum_required(VERSION 4.0 FATAL_ERROR)
-project(MT_Renderer)
+project(VkRenderLibLite)
 
 set(CMAKE_CXX_STANDARD 20)
 
 include (cmake/dependencies.cmake)
 include(GNUInstallDirs)
 
-set(ENGINE_PROJECT_NAME "MT_Renderer")
+set(ENGINE_PROJECT_NAME "VkRenderLibLite")
 
 #Header includes
 file(GLOB_RECURSE HEADER_FILES

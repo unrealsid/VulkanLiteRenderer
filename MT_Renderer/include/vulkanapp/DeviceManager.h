@@ -15,7 +15,7 @@ namespace vulkanapp
         ~DeviceManager();
         
         bool device_init();
-        bool get_queues();
+        bool init_queues();
         void cleanup();
         
     private:

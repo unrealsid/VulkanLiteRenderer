@@ -3,6 +3,7 @@
 #include "renderer/Renderer.h"
 #include "structs/engine/RenderContext.h"
 #include "vulkanapp/VulkanCleanupQueue.h"
+#include "vulkanapp/utils/MemoryUtils.h"
 
 namespace core::renderer
 {
@@ -13,6 +14,7 @@ namespace core::renderer
         create_window();
         create_device();
         create_swapchain();
+        utils::MemoryUtils::create_vma_allocator(*render_context->device_manager);
     }
 
     void Renderer::create_window()
@@ -36,6 +38,7 @@ namespace core::renderer
     {
         render_context->device_manager = std::make_unique<vulkanapp::DeviceManager>(*render_context);
         render_context->device_manager->device_init();
+        render_context->device_manager->init_queues();
     }
 
     void Renderer::init_cleanup() const

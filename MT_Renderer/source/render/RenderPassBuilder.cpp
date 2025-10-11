@@ -5,6 +5,15 @@
 
 namespace core::renderer
 {
+    RenderPassBuilder::RenderPassBuilder(RenderContext* render_context, uint32_t max_frames_in_flight):
+                        render_context(render_context),
+                        max_frames_in_flight(max_frames_in_flight),
+                        command_pool(nullptr),
+                        active_command_buffer(nullptr)
+    {
+        swapchain = render_context->swapchain_manager.get();
+    }
+
     VkCommandBuffer* RenderPassBuilder::get_command_buffer(uint32_t pass_id, uint32_t image_id)
     {
         //Find the command buffer with a particular id and image_id
@@ -58,7 +67,7 @@ namespace core::renderer
 
     RenderPassBuilder& RenderPassBuilder::create_depth_stencil_image(uint32_t pass_id)
     {
-        if (depth_stencil_images.size() <= pass_id)
+        if (pass_id < depth_stencil_images.size())
         {
             utils::RenderUtils::get_supported_depth_stencil_format(render_context->device_manager->get_physical_device(), &depth_stencil_images[pass_id].format);
             utils::RenderUtils::create_depth_stencil_image(*render_context, render_context->swapchain_manager->get_swapchain().extent, render_context->device_manager->get_allocator(), depth_stencil_images[pass_id]);
@@ -87,71 +96,109 @@ namespace core::renderer
         if (active_command_buffer &&
             (render_context->dispatch_table.beginCommandBuffer(*active_command_buffer, &begin_info) != VK_SUCCESS))
         {
+            std::cout << "failed to begin recording command buffer\n";
             assert(false);
         }
 
         return *this;
     }
 
-    RenderPassBuilder& RenderPassBuilder::set_image_layout_transitions_for_active_command_buffer(uint32_t pass_id, uint32_t image)
+    RenderPassBuilder& RenderPassBuilder::set_present_image_transition(uint32_t pass_id, uint32_t image_id, PresentationImageType presentation_image_type)
     {
 #ifdef _DEBUG
         assert(active_command_buffer);
 #endif
 
-        utils::ImageUtils::image_layout_transition(*active_command_buffer,
-                                       render_context->swapchain_manager->get_swapchain().get_images().value()[image],
-                                       VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-                                       VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-                                       0,
-                                       VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-                                       VK_IMAGE_LAYOUT_UNDEFINED,
-                                       VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                                        VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 });
+        switch (presentation_image_type)
+        {
 
-        utils::ImageUtils::image_layout_transition(*active_command_buffer,
-                                     depth_stencil_images[pass_id].image,
-                                     VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
-                                     VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
-                                     0,
-                                     VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
-                                     VK_IMAGE_LAYOUT_UNDEFINED,
-                                     VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-                                      VkImageSubresourceRange{ VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT, 0, 1, 0, 1 });
+        case PresentationImageType::SwapChain:
+            {
+                auto swapchain_ref = render_context->swapchain_manager->get_swapchain();
+                auto image = swapchain_ref.get_images().value()[image_id];
+                utils::ImageUtils::image_layout_transition(*active_command_buffer,
+                                                image,
+                                               VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+                                               VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                                               0,
+                                               VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+                                               VK_IMAGE_LAYOUT_UNDEFINED,
+                                               VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                                                VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 });
+                break;
+            }
+
+        case PresentationImageType::DepthStencil:
+            utils::ImageUtils::image_layout_transition(*active_command_buffer,
+                                          depth_stencil_images[pass_id].image,                                     
+                                         VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+                                         VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+                                         0,
+                                         VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+                                         VK_IMAGE_LAYOUT_UNDEFINED,
+                                         VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+                                          VkImageSubresourceRange{ VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT, 0, 1, 0, 1 });
+
+            break;
+
+        default:
+            std::cout << "Invalid PresentationImageType\n";
+        }
 
         return *this;
     }
 
-    RenderPassBuilder& RenderPassBuilder::setup_attachments(uint32_t pass_id, uint32_t image)
+    RenderPassBuilder& RenderPassBuilder::setup_color_attachment(uint32_t image, VkClearValue clear_value)
     {
 #ifdef _DEBUG
         assert(active_command_buffer);
 #endif
 
-        auto swapchain = render_context->swapchain_manager->get_swapchain();
+        auto swapchain_ref = render_context->swapchain_manager->get_swapchain();
+        color_attachment_info = { VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO };
 
-        // Color attachment
-        VkRenderingAttachmentInfoKHR color_attachment_info = { VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO };
+        //TODO: Bounds check
+
         color_attachment_info.pNext        = VK_NULL_HANDLE;
-        color_attachment_info.imageView    = swapchain.get_image_views().value()[image];
+        color_attachment_info.imageView    = swapchain_ref.get_image_views().value()[image];
         color_attachment_info.imageLayout  = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
         color_attachment_info.resolveMode  = VK_RESOLVE_MODE_NONE;
         color_attachment_info.loadOp       = VK_ATTACHMENT_LOAD_OP_CLEAR;
         color_attachment_info.storeOp      = VK_ATTACHMENT_STORE_OP_STORE;
-        color_attachment_info.clearValue   = { {0.1f, 0.1f, 0.1f, 1.0f} };
+        color_attachment_info.clearValue   = clear_value; ;
+
+        return *this;
+    }
+
+    RenderPassBuilder& RenderPassBuilder::setup_depth_attachment(uint32_t pass_id, VkClearValue clear_value)
+    {
+#ifdef _DEBUG
+        assert(active_command_buffer);
+#endif
 
         // Depth attachment
-        VkRenderingAttachmentInfoKHR depth_attachment_info = { VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO };
+        depth_attachment_info = { VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO };
         depth_attachment_info.pNext       = VK_NULL_HANDLE;
         depth_attachment_info.imageView   = depth_stencil_images[pass_id].view;
-        depth_attachment_info.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        depth_attachment_info.imageLayout =  VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
         depth_attachment_info.resolveMode = VK_RESOLVE_MODE_NONE;
         depth_attachment_info.loadOp      = VK_ATTACHMENT_LOAD_OP_CLEAR;
         depth_attachment_info.storeOp     = VK_ATTACHMENT_STORE_OP_STORE;
         depth_attachment_info.clearValue  = { {1.0f, 0} }; // depth=1, stencil=0
 
+        return *this;
+    }
+
+    RenderPassBuilder& RenderPassBuilder::begin_rendering()
+    {
+#ifdef _DEBUG
+        assert(active_command_buffer && swapchain);
+#endif
+
+        auto swapchain_ref = swapchain->get_swapchain();
+
         // Render area
-        VkRect2D render_area = { {0, 0}, {swapchain.extent.width, swapchain.extent.height} };
+        VkRect2D render_area = { {0, 0}, {swapchain_ref.extent.width, swapchain_ref.extent.height} };
 
         // Dynamic rendering info
         VkRenderingInfoKHR render_info = { VK_STRUCTURE_TYPE_RENDERING_INFO_KHR };

@@ -107,7 +107,7 @@ bool vulkanapp::DeviceManager::device_init()
     return true;
 }
 
-bool vulkanapp::DeviceManager::get_queues()
+bool vulkanapp::DeviceManager::init_queues()
 {
     auto gq = device.get_queue(vkb::QueueType::graphics);
     if (!gq.has_value())

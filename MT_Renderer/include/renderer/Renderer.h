@@ -21,7 +21,18 @@ namespace core::renderer
         void renderer_init();
         void renderer_update();
 
+        [[nodiscard]] platform::WindowManager* get_window_manager() const
+        {
+            return window_manager;
+        }
+
+        [[nodiscard]] RenderContext* get_render_context() const
+        {
+            return render_context.get();
+        }
+
     private:
+        //TODO: Remove window manager
         platform::WindowManager* window_manager = nullptr;
         std::unique_ptr<RenderContext> render_context;
 
