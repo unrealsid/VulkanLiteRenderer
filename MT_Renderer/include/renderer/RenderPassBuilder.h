@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "enums/PresentationImageType.h"
+#include "materials/Material.h"
 #include "platform/WindowManager.h"
 #include "structs/engine/RenderContext.h"
 #include "structs/vulkan/Vk_Image.h"
@@ -33,17 +34,25 @@ namespace core::renderer
         RenderPassBuilder& setup_color_attachment(uint32_t image, VkClearValue clear_value);
         RenderPassBuilder& setup_depth_attachment(uint32_t pass_id, VkClearValue clear_value);
         RenderPassBuilder& begin_rendering();
-        RenderPassBuilder& record_draw_batches(const std::function<void()>& func);
+        RenderPassBuilder& end_rendering();
+        RenderPassBuilder& record_draw_batches(const std::function<void(VkCommandBuffer current_buffer,
+            RenderContext* render_context,
+            material::Material* material)>& func);
         RenderPassBuilder& end_command_buffer_recording(uint32_t image);
+
+        RenderPassBuilder& set_material(material::Material& material);
         
         [[nodiscard]] uint32_t get_max_frames_in_flight() const { return max_frames_in_flight; }
+
+        bool draw_frame();
 
     private:
         RenderContext* render_context;
 
         uint32_t max_frames_in_flight;
         VkCommandPool command_pool;
-        vulkanapp::SwapchainManager* swapchain;
+        vulkanapp::SwapchainManager* swapchain_manager;
+        vulkanapp::DeviceManager* device_manager;
 
         /*
          *Maps which buffers correspond to which pass_id.
@@ -63,7 +72,18 @@ namespace core::renderer
         std::vector<Vk_Image> depth_stencil_images;
         std::vector<Vk_Image> color_images;
 
-        void draw_frame();
+        material::Material* material_to_use;
+
+        std::vector<VkSemaphore> available_semaphores;
+        std::vector<VkSemaphore> finished_semaphores;
+        VkSemaphore object_picker_done_semaphore;
+
+        std::vector<VkFence> in_flight_fences;
+        std::vector<VkFence> image_in_flight;
+
+        size_t current_frame = 0;
+
+        bool create_sync_objects();
 
         void cleanup();
     };

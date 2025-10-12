@@ -4,7 +4,10 @@
 #include <ostream>
 
 #include "Config.inl"
+#include "materials/Material.h"
 #include "renderer/RenderPassBuilder.h"
+#include "structs/vulkan/PushConstantBlock.h"
+#include "structs/vulkan/Vertex.h"
 
 namespace core::renderer
 {
@@ -16,7 +19,10 @@ namespace core::renderer
         init_vulkan();
         init_cleanup();
 
-        RenderPassBuilder pass_builder(render_context.get(), 2);
+        material::Material material("default", render_context.get());
+        auto new_material = material.create_material("default");
+
+        pass_builder = RenderPassBuilder(render_context.get(), 2);
 
         auto swapchain_ref = render_context->swapchain_manager->get_swapchain();
 
@@ -37,10 +43,21 @@ namespace core::renderer
             .setup_color_attachment(i, { {0.1f, 0.1f, 0.1f, 1.0f} })
             .setup_depth_attachment(i, { {1.0f, 0} })
             .begin_rendering()
-            .record_draw_batches([&]() -> void
+            .record_draw_batches([&](VkCommandBuffer command_buffer, RenderContext* render_context, material::Material* material)
             {
-                //Render commands
+                material->get_shader_object()->set_initial_state(render_context->dispatch_table, render_context->swapchain_manager->get_swapchain().extent, command_buffer,
+                                                                 Vertex::get_binding_description(), Vertex::get_attribute_descriptions(), render_context->swapchain_manager->get_swapchain().extent);
+                material->get_shader_object()->bind_material_shader(render_context->dispatch_table, command_buffer);
+
+                //Passing Buffer Addresses
+                PushConstantBlock references{};
+                // Pass a pointer to the global matrix via a buffer device address
+                // references.scene_buffer_address = engine_context.renderer->get_gpu_scene_buffer().scene_buffer_address;
+                // references.material_params_address = engine_context.material_manager->get_material_params_address();
+
+                render_context->dispatch_table.cmdDraw(command_buffer, 3, 1, 0, 0);
             })
+            .end_rendering()
             .end_command_buffer_recording(i);
         }
     }

@@ -1,6 +1,8 @@
 ﻿#pragma once
 
 #include <memory>
+
+#include "RenderPassBuilder.h"
 #include "platform/WindowManager.h"
 #include "structs/engine/RenderContext.h"
 #include "structs/vulkan/Vk_Image.h"
@@ -14,9 +16,12 @@ namespace core::renderer
     class Renderer
     {
     public:
-        explicit Renderer(uint32_t p_max_frames_in_flight = 2) : max_frames_in_flight(p_max_frames_in_flight)
+        explicit Renderer(uint32_t p_max_frames_in_flight = 2) : pass_builder({}),
+                                                                 max_frames_in_flight(p_max_frames_in_flight)
         {
         }
+
+        RenderPassBuilder pass_builder;
 
         void renderer_init();
         void renderer_update();

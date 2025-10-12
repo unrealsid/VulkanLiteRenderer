@@ -16,7 +16,7 @@ int main()
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, true);
 
-        glfwSwapBuffers(window);
+        renderer.pass_builder.draw_frame();
 
         glfwPollEvents();
     }

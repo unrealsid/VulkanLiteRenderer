@@ -11,7 +11,8 @@ namespace core::renderer
                         command_pool(nullptr),
                         active_command_buffer(nullptr)
     {
-        swapchain = render_context->swapchain_manager.get();
+        swapchain_manager = render_context->swapchain_manager.get();
+        device_manager = render_context->device_manager.get();
     }
 
     VkCommandBuffer* RenderPassBuilder::get_command_buffer(uint32_t pass_id, uint32_t image_id)
@@ -41,6 +42,8 @@ namespace core::renderer
 
     RenderPassBuilder& RenderPassBuilder::init_pass(uint32_t pass_id, bool use_max_frames)
     {
+        create_sync_objects();
+
         if (use_max_frames)
         {
             for (int i = 0; i < max_frames_in_flight; i++)
@@ -192,10 +195,10 @@ namespace core::renderer
     RenderPassBuilder& RenderPassBuilder::begin_rendering()
     {
 #ifdef _DEBUG
-        assert(active_command_buffer && swapchain);
+        assert(active_command_buffer && swapchain_manager);
 #endif
 
-        auto swapchain_ref = swapchain->get_swapchain();
+        auto swapchain_ref = swapchain_manager->get_swapchain();
 
         // Render area
         VkRect2D render_area = { {0, 0}, {swapchain_ref.extent.width, swapchain_ref.extent.height} };
@@ -214,16 +217,23 @@ namespace core::renderer
         return *this;
     }
 
-    RenderPassBuilder& RenderPassBuilder::record_draw_batches(const std::function<void()>& func)
+    RenderPassBuilder& RenderPassBuilder::end_rendering()
     {
-        func();
+        render_context->dispatch_table.cmdEndRenderingKHR(*active_command_buffer);
+        return *this;
+    }
+
+    RenderPassBuilder& RenderPassBuilder::record_draw_batches(const std::function<void(VkCommandBuffer current_buffer, RenderContext* render_context, material::Material* material)>& func)
+    {
+#ifdef _DEBUG
+        assert(active_command_buffer && swapchain_manager);
+#endif
+        func(*active_command_buffer, render_context, material_to_use);
         return *this;
     }
 
     RenderPassBuilder& RenderPassBuilder::end_command_buffer_recording(uint32_t image)
     {
-        render_context->dispatch_table.cmdEndRenderingKHR(*active_command_buffer);
-
         utils::ImageUtils::image_layout_transition
         (
              *active_command_buffer,                            // Command buffer
@@ -244,41 +254,121 @@ namespace core::renderer
         return *this;
     }
 
-    void RenderPassBuilder::draw_frame()
+    RenderPassBuilder& RenderPassBuilder::set_material(material::Material& material)
     {
-        // for (const auto& [material_id, draw_batch] : draw_batches)
-        // {
-        // //Pipeline object binding
-        // draw_batch.material->get_shader_object()->set_initial_state(render_context->dispatch_table, render_context->swapchain_manager->get_swapchain().extent,*active_command_buffer,
-        //                                                             Vertex::get_binding_description(), Vertex::get_attribute_descriptions(), render_context->swapchain_manager->get_swapchain().extent);
-        // draw_batch.material->get_shader_object()->bind_material_shader(render_context->dispatch_table, command_buffers[i]);
-        //
-        // render_context->dispatch_table.cmdBindDescriptorSets(*active_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, draw_batch.material->get_pipeline_layout(), 0, 1, &draw_batch.material->get_descriptor_set(), 0, nullptr);
+        material_to_use = &material;
+        return *this;
+    }
 
-        //Passing Buffer Addresses
-        // PushConstantBlock references{};
-        // // Pass a pointer to the global matrix via a buffer device address
-        // references.scene_buffer_address = engine_context.renderer->get_gpu_scene_buffer().scene_buffer_address;
-        // references.material_params_address = engine_context.material_manager->get_material_params_address();
+    bool RenderPassBuilder::create_sync_objects()
+    {
+        available_semaphores.resize(max_frames_in_flight);
+        finished_semaphores.resize(max_frames_in_flight);
+        in_flight_fences.resize(max_frames_in_flight);
+        image_in_flight.resize(swapchain_manager->get_swapchain().image_count, VK_NULL_HANDLE);
 
-        //Binds and draws meshes
-        // for (auto draw_item : draw_batch.items)
-        // {
-        //     references.object_model_transform_addr = draw_item.entity->get_transform_buffer_sub_address();
-        //
-        //     dispatch_table.cmdPushConstants(command_buffers[i], draw_batch.material->get_pipeline_layout(),
-        //         VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushConstantBlock), &references);
-        //
-        //     VkBuffer vertex_buffers[] = {draw_item.vertex_buffer};
-        //     VkDeviceSize offsets[] = {0};
-        //     dispatch_table.cmdBindVertexBuffers(command_buffers[i], 0, 1, vertex_buffers, offsets);
-        //     dispatch_table.cmdBindIndexBuffer(command_buffers[i], draw_item.index_buffer, 0, VK_INDEX_TYPE_UINT32);
-        //
-        //     // Issue the draw call using the index buffer
-        //     dispatch_table.cmdDrawIndexed(command_buffers[i], draw_item.index_count, 1, draw_item.index_range.first, 0,0);
-        // }
-        //}
-        //}
+        VkSemaphoreCreateInfo semaphore_info = {};
+        semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+        VkFenceCreateInfo fence_info = {};
+        fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+        fence_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+        auto dispatch_table = render_context->dispatch_table;
+
+        for (size_t i = 0; i < max_frames_in_flight; i++)
+        {
+            if (dispatch_table.createSemaphore(&semaphore_info, nullptr, &available_semaphores[i]) != VK_SUCCESS ||
+                dispatch_table.createSemaphore(&semaphore_info, nullptr, &finished_semaphores[i]) != VK_SUCCESS ||
+                dispatch_table.createFence(&fence_info, nullptr, &in_flight_fences[i]) != VK_SUCCESS)
+            {
+                std::cout << "failed to create sync objects\n";
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    bool RenderPassBuilder::draw_frame()
+    {
+        auto dispatch_table = render_context->dispatch_table;
+        dispatch_table.waitForFences(1, &in_flight_fences[current_frame], VK_TRUE, UINT64_MAX);
+
+        uint32_t image_index = 0;
+        VkResult result = dispatch_table.acquireNextImageKHR(swapchain_manager->get_swapchain(), UINT64_MAX, available_semaphores[current_frame], VK_NULL_HANDLE, &image_index);
+        if (result == VK_ERROR_OUT_OF_DATE_KHR)
+        {
+            return swapchain_manager->recreate_swapchain();
+        }
+
+        if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
+        {
+            std::cout << "failed to acquire swapchain image. Error " << result << "\n";
+            return false;
+        }
+
+        if (image_in_flight[image_index] != VK_NULL_HANDLE)
+        {
+            dispatch_table.waitForFences(1, &image_in_flight[image_index], VK_TRUE, UINT64_MAX);
+        }
+
+        image_in_flight[image_index] = in_flight_fences[current_frame];
+
+        VkSubmitInfo submitInfo = {};
+        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+        VkSemaphore wait_semaphores[] = { available_semaphores[current_frame]};
+        VkPipelineStageFlags wait_stages[] =
+        {
+            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+        };
+
+        submitInfo.waitSemaphoreCount = 1;
+        submitInfo.pWaitSemaphores = wait_semaphores;
+        submitInfo.pWaitDstStageMask = wait_stages;
+
+        std::vector command_buffers_to_submit = { command_buffers[image_index] };
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers = command_buffers_to_submit.data();
+
+        VkSemaphore signal_semaphores[] = { finished_semaphores[current_frame] };
+        submitInfo.signalSemaphoreCount = 1;
+        submitInfo.pSignalSemaphores = signal_semaphores;
+
+        dispatch_table.resetFences(1, &in_flight_fences[current_frame]);
+        if (dispatch_table.queueSubmit(device_manager->get_graphics_queue(), 1, &submitInfo, in_flight_fences[current_frame]) != VK_SUCCESS)
+        {
+            //std::cout << "failed to submit draw command buffer\n";
+            return false;
+        }
+
+        VkPresentInfoKHR present_info = {};
+        present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+
+        present_info.waitSemaphoreCount = 1;
+        present_info.pWaitSemaphores = signal_semaphores;
+
+        VkSwapchainKHR swapChains[] = { swapchain_manager->get_swapchain().swapchain };
+        present_info.swapchainCount = 1;
+        present_info.pSwapchains = swapChains;
+
+        present_info.pImageIndices = &image_index;
+
+        result = dispatch_table.queuePresentKHR(device_manager->get_present_queue(), &present_info);
+        if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
+        {
+            return swapchain_manager->recreate_swapchain();
+        }
+        if (result != VK_SUCCESS)
+        {
+            std::cout << "failed to present swapchain image\n";
+            return false;
+        }
+
+        current_frame = (current_frame + 1) % max_frames_in_flight;
+        return true;
     }
 
     void RenderPassBuilder::cleanup()
