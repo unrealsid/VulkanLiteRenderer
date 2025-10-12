@@ -19,16 +19,16 @@ namespace core::renderer
         init_vulkan();
         init_cleanup();
 
+        pass_builder = std::make_unique<RenderPassBuilder>(render_context.get(), max_frames_in_flight);
+
         material::Material material("default", render_context.get());
         auto new_material = material.create_material("default");
-
-        pass_builder = RenderPassBuilder(render_context.get(), 2);
 
         auto swapchain_ref = render_context->swapchain_manager->get_swapchain();
 
         //Pass 0
         uint32_t pass_id = 0;
-        auto pass = pass_builder.init_pass(pass_id, true);
+        RenderPassBuilder& pass = pass_builder->init_pass(pass_id, true);
         pass.create_command_pool()
         .create_depth_stencil_image(pass_id);
 
@@ -42,6 +42,7 @@ namespace core::renderer
             .set_present_image_transition(pass_id, i, PresentationImageType::DepthStencil)
             .setup_color_attachment(i, { {0.1f, 0.1f, 0.1f, 1.0f} })
             .setup_depth_attachment(i, { {1.0f, 0} })
+            .set_material(new_material)
             .begin_rendering()
             .record_draw_batches([&](VkCommandBuffer command_buffer, RenderContext* render_context, material::Material* material)
             {
@@ -60,6 +61,10 @@ namespace core::renderer
             .end_rendering()
             .end_command_buffer_recording(i);
         }
+
+        std::cout << "Done";
+
+        std::cout << pass.command_buffers.size();
     }
 
     void Renderer::renderer_update()

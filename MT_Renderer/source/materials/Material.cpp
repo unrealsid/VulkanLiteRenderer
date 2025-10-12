@@ -12,8 +12,8 @@ namespace material
         material_name(std::move(material_name)), descriptor_set(nullptr), pipeline_layout(nullptr),
         render_context(render_context)
     {
-        vertex_shader_path = "shaders/triangle.vert.spv";
-        fragment_shader_path = "shaders/triangle.frag.spv";
+        vertex_shader_path = R"(D:\Visual Studio 2022\Code\MTRenderer\MT_Renderer\shaders\triangle.vert.spv)";
+        fragment_shader_path = R"(D:\Visual Studio 2022\Code\MTRenderer\MT_Renderer\shaders\triangle.frag.spv)";
     }
 
     void Material::add_shader_object(std::unique_ptr<ShaderObject> shader_object)
@@ -46,14 +46,12 @@ namespace material
         utils::FileUtils::loadShader(fragment_shader_path, shaderCodes[1], shaderCodeSizes[1]);
 
         auto shader_object = std::make_unique<ShaderObject>();
-        shader_object->create_shaders(render_context->dispatch_table, shaderCodes[0], shaderCodeSizes[0], shaderCodes[1], shaderCodeSizes[1],
-            nullptr, 0,
-            &push_constant_range, 1);
+        shader_object->create_shaders(render_context->dispatch_table, shaderCodes[0], shaderCodeSizes[0], shaderCodes[1], shaderCodeSizes[1], nullptr, 0, nullptr, 0);
 
         VkPipelineLayout pipeline_layout;
 
         //Create the pipeline layout
-        VkPipelineLayoutCreateInfo pipelineLayoutInfo = utils::DescriptorUtils::pipeline_layout_create_info(nullptr,  0, &push_constant_range, 1);
+        VkPipelineLayoutCreateInfo pipelineLayoutInfo = utils::DescriptorUtils::pipeline_layout_create_info(nullptr,  0, nullptr, 0);
         render_context->dispatch_table.createPipelineLayout(&pipelineLayoutInfo, VK_NULL_HANDLE, &pipeline_layout);
 
         //Create material

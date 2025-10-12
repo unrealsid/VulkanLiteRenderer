@@ -8,7 +8,7 @@ int main()
     core::renderer::Renderer renderer;
     renderer.renderer_init();
 
-    auto window = renderer.get_window_manager()->get_window();
+    auto window = renderer.get_render_context()->window_manager->get_window();
 
     while (!glfwWindowShouldClose(window))
     {
@@ -16,7 +16,7 @@ int main()
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, true);
 
-        renderer.pass_builder.draw_frame();
+        renderer.pass_builder->draw_frame();
 
         glfwPollEvents();
     }
