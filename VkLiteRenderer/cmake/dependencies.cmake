@@ -72,23 +72,23 @@ if(NOT STB_FOUND)
 endif()
 
 #6. Add moodycamel readerwriter queue
-find_package(RWQueue QUIET)
-if(RWQueue_FOUND)
-    message(STATUS "Using RWQueue via find_package")
-endif ()
+#find_package(RWQueue QUIET)
+#if(RWQueue_FOUND)
+#    message(STATUS "Using RWQueue via find_package")
+#endif ()
 
-if(NOT RWQueue_FOUND)
-    FetchContent_Declare(
-            readerwriterqueue
-            GIT_REPOSITORY    https://github.com/cameron314/readerwriterqueue
-            GIT_TAG           master
-            GIT_SHALLOW TRUE
-            GIT_PROGRESS TRUE
-    )
-
-    message(STATUS "Using readerwriterqueue via FetchContent")
-    FetchContent_MakeAvailable(readerwriterqueue)
-endif ()
+#if(NOT RWQueue_FOUND)
+#    FetchContent_Declare(
+#            readerwriterqueue
+#            GIT_REPOSITORY    https://github.com/cameron314/readerwriterqueue
+#            GIT_TAG           master
+#            GIT_SHALLOW TRUE
+#            GIT_PROGRESS TRUE
+#    )
+#
+#    message(STATUS "Using readerwriterqueue via FetchContent")
+#    FetchContent_MakeAvailable(readerwriterqueue)
+#endif ()
 
 
 

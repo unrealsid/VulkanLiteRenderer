@@ -1,12 +1,12 @@
 cmake_minimum_required(VERSION 4.0 FATAL_ERROR)
-project(VkRenderLibLite)
+project(VulkanLiteRenderer)
 
 set(CMAKE_CXX_STANDARD 20)
 
 include (cmake/dependencies.cmake)
 include(GNUInstallDirs)
 
-set(ENGINE_PROJECT_NAME "VkRenderLibLite")
+set(ENGINE_PROJECT_NAME "VulkanLiteRenderer")
 
 #Header includes
 file(GLOB_RECURSE HEADER_FILES
@@ -48,7 +48,7 @@ target_link_libraries(${ENGINE_PROJECT_NAME} PUBLIC Vulkan::Vulkan
                                                     glm
                                                     vk-bootstrap::vk-bootstrap
                                                     STB-image::STB-image
-                                                    readerwriterqueue)
+                                                    )
 
 # Enable Hot Reload for MSVC compilers if supported.
 if (POLICY CMP0141)
