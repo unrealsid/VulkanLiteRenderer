@@ -1,7 +1,7 @@
 include(FetchContent)
 
 #1. Include OpenGL
-find_package(OpenGL REQUIRED)
+find_package(Vulkan REQUIRED)
 
 #2. Download GLFW3, if required
 find_package(GLFW3 CONFIG QUIET)
@@ -37,19 +37,60 @@ if(NOT GLM_FOUND)
     FetchContent_MakeAvailable(GLM)
 endif()
 
-#4. Setup glad libs
-set(GLAD_LIBS glad)
-set(GLAD_LIBS_DIR ${CMAKE_SOURCE_DIR}/libraries)
+#4. Add Vk Bootstrap
+find_package(vk-bootstrap QUIET)
+if(vk-bootstrap_FOUND)
+    message(STATUS "Using vk-bootstrap via find_package")
+endif()
 
-file(GLOB_RECURSE GLAD_LIBS_GLOBAL_DIR
-        "${GLAD_LIBS_DIR}/*.h"
-        "${GLAD_LIBS_DIR}/*.c"
-)
+if(NOT vk-bootstrap_FOUND)
+    FetchContent_Declare(
+            vk_bootstrap
+            GIT_REPOSITORY "https://github.com/charles-lunarg/vk-bootstrap"
+            GIT_TAG        v1.4.321
+            GIT_SHALLOW TRUE
+            GIT_PROGRESS TRUE
+    )
+    message(STATUS "Using vk-bootstrap via FetchContent")
+    FetchContent_MakeAvailable(vk_bootstrap)
+endif()
 
-add_library(${GLAD_LIBS} STATIC ${GLAD_LIBS_GLOBAL_DIR})
-target_include_directories(${GLAD_LIBS} PUBLIC ${GLAD_LIBS_DIR})
+#5 Add STB
+find_package(STB QUIET)
+if(STB_FOUND)
+    message(STATUS "Using STB via find_package")
+endif()
+if(NOT STB_FOUND)
+    FetchContent_Declare(
+            STB
+            GIT_REPOSITORY "https://github.com/unrealsid/stb-cmake.git"
+            GIT_SHALLOW TRUE
+            GIT_PROGRESS TRUE
+    )
+    message(STATUS "Using STB via FetchContent")
+    FetchContent_MakeAvailable(STB)
+endif()
 
-target_link_libraries(${GLAD_LIBS} PUBLIC OpenGL::GL)
+#6. Add moodycamel readerwriter queue
+find_package(RWQueue QUIET)
+if(RWQueue_FOUND)
+    message(STATUS "Using RWQueue via find_package")
+endif ()
+
+if(NOT RWQueue_FOUND)
+    FetchContent_Declare(
+            readerwriterqueue
+            GIT_REPOSITORY    https://github.com/cameron314/readerwriterqueue
+            GIT_TAG           master
+            GIT_SHALLOW TRUE
+            GIT_PROGRESS TRUE
+    )
+
+    message(STATUS "Using readerwriterqueue via FetchContent")
+    FetchContent_MakeAvailable(readerwriterqueue)
+endif ()
+
+
 
 
 
