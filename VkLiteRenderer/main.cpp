@@ -1,25 +1,24 @@
 ﻿#include <iostream>
 
-#include "renderer/Renderer.h"
-#include "renderer/RenderPassBuilder.h"
+#include "core/Application.h"
+#include "core/Engine.h"
+
+void setup_triangle(core::Application* application)
+{
+    std::cout << "Setup Triangle" << std::endl;
+
+}
+
+void application_update(core::Application* application)
+{
+    std::cout << "Application Update" << std::endl;
+}
 
 int main()
 {
-    core::renderer::Renderer renderer;
-    renderer.renderer_init();
-
-    auto window = renderer.get_render_context()->window_manager->get_window();
-
-    while (!glfwWindowShouldClose(window))
-    {
-        // Input handling
-        if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-            glfwSetWindowShouldClose(window, true);
-
-        renderer.pass_builder->draw_frame();
-
-        glfwPollEvents();
-    }
+    core::Engine engine(setup_triangle, application_update);
+    engine.init();
+    engine.shutdown();
 
     return 0;
 }

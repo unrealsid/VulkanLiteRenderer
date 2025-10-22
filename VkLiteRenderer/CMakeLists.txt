@@ -48,7 +48,7 @@ target_link_libraries(${ENGINE_PROJECT_NAME} PUBLIC Vulkan::Vulkan
                                                     glm
                                                     vk-bootstrap::vk-bootstrap
                                                     STB-image::STB-image
-                                                    )
+                                                    readerwriterqueue)
 
 # Enable Hot Reload for MSVC compilers if supported.
 if (POLICY CMP0141)

@@ -68,5 +68,18 @@ namespace core::renderer
     void Renderer::renderer_update()
     {
         std::cout << "Renderer Update" << std::endl;
+
+        auto window = render_context->window_manager->get_window();
+
+        while (!glfwWindowShouldClose(window))
+        {
+            // Input handling
+            if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+                glfwSetWindowShouldClose(window, true);
+
+            pass_builder->draw_frame();
+
+            glfwPollEvents();
+        }
     }
 }

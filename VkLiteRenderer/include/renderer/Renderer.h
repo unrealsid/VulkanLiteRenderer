@@ -29,8 +29,6 @@ namespace core::renderer
         }
 
     private:
-        //TODO: Remove window manager
-        platform::WindowManager* window_manager = nullptr;
         std::unique_ptr<RenderContext> render_context;
 
         uint32_t max_frames_in_flight;
