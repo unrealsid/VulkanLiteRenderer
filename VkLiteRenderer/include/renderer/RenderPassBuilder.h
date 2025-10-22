@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include "VulkanBarrierManager.hpp"
 #include "enums/PresentationImageType.h"
 #include "materials/Material.h"
 #include "platform/WindowManager.h"
@@ -82,6 +83,8 @@ namespace core::renderer
         std::vector<VkFence> image_in_flight;
 
         size_t current_frame = 0;
+
+        VulkanBarrierManager barrier_manager;
 
         bool create_sync_objects();
 

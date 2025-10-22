@@ -12,8 +12,8 @@ namespace material
         material_name(std::move(material_name)), descriptor_set(nullptr), pipeline_layout(nullptr),
         render_context(render_context)
     {
-        vertex_shader_path = R"(D:\Visual Studio 2022\Code\VulkanLiteRenderer\VkLiteRenderer\shaders\triangle.vert.spv)";
-        fragment_shader_path = R"(D:\Visual Studio 2022\Code\VulkanLiteRenderer\VkLiteRenderer\shaders\triangle.frag.spv)";
+        vertex_shader_path = R"(C:\Users\Sid\Documents\Visual Studio 2022\Code\VulkanLiteRenderer\VkLiteRenderer\shaders\triangle.vert.spv)";
+        fragment_shader_path = R"(C:\Users\Sid\Documents\Visual Studio 2022\Code\VulkanLiteRenderer\VkLiteRenderer\shaders\triangle.frag.spv)";
     }
 
     void Material::add_shader_object(std::unique_ptr<ShaderObject> shader_object)
