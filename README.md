@@ -1,2 +1,2 @@
 # Vulkan Lite Renderer
-A lite multithreaded renderer
+A lite multithreaded Vulkan renderer
