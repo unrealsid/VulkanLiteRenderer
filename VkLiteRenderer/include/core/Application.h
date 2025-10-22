@@ -1,10 +1,8 @@
 ﻿#pragma once
 #include <cstdint>
 #include <functional>
-
 #include "structs/engine/FrameContext.h"
 
-struct ClearState;
 
 namespace core
 {
