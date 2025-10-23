@@ -65,21 +65,17 @@ namespace core::renderer
         std::cout << "Done";
     }
 
-    void Renderer::renderer_update()
+    void Renderer::renderer_update() const
     {
+        std::cout << "\nFrame Contex can render: " << frame_context->start_rendering;
         std::cout << "Renderer Update" << std::endl;
 
-        auto window = render_context->window_manager->get_window();
-
-        while (!glfwWindowShouldClose(window))
+        if (frame_context->start_rendering)
         {
-            // Input handling
-            if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-                glfwSetWindowShouldClose(window, true);
-
-            pass_builder->draw_frame();
-
-            glfwPollEvents();
+            while (true)
+            {
+                pass_builder->draw_frame();
+            }
         }
     }
 }

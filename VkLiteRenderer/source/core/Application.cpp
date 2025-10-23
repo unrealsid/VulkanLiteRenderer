@@ -13,9 +13,13 @@ namespace core
         p_application_init_callback(this);
         application_update_callback = p_application_update_callback;
 
+        frame_context->window_manager = std::make_shared<platform::WindowManager>();
+        frame_context->window_manager->create_window_glfw(
+        {
+            window_width, window_height, window_title
+        });
 
-
-        application_update();
+        frame_context->start_rendering = true;
     }
 
     void Application::application_update()
@@ -25,8 +29,21 @@ namespace core
         //TODO: Remove later
         std::cout << "Application update started... waiting 4 seconds...." << std::endl;
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(4000));
+        std::this_thread::sleep_for(std::chrono::milliseconds(6000));
 
         std::cout << "Application update completed" << std::endl;
+
+        auto window = frame_context->window_manager->get_window();
+
+        while (!glfwWindowShouldClose(window))
+        {
+            // Input handling
+            if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+            {
+                glfwSetWindowShouldClose(window, true);
+            }
+
+            glfwPollEvents();
+        }
     }
 } // core

@@ -9,6 +9,7 @@
 #include "Config.inl"
 #include "platform/WindowManager.h"
 #include "renderer/Renderer.h"
+#include "vulkanapp/VulkanCleanupQueue.h"
 
 namespace core
 {
@@ -37,6 +38,9 @@ namespace core
 
             //Application thread finishes
             threading::ThreadUtils::semaphore_post(jobs["application"]->semaphore_continue.get(), 1);
+
+            //Call app update after we finish setting up the apllication thread. Also, let rest of the engine continue with init
+            application->application_update();
         },
         frame_context.get(),
         application_init_callback,
@@ -51,7 +55,7 @@ namespace core
         //Setup graphics thread
         create_job("rendering", []( FrameContext* p_frame_context)
         {
-            const auto renderer = std::make_unique<renderer::Renderer>();
+            const auto renderer = std::make_unique<renderer::Renderer>(p_frame_context);
             renderer->renderer_init();
 
             //Post the semaphore here so the main thread can resume. We have finished initializing the graphics thread here
@@ -84,5 +88,7 @@ namespace core
     {
         jobs["application"]->thread.join();
         jobs["rendering"]->thread.join();
+
+        vulkanapp::VulkanCleanupQueue::push_cleanup_function(CLEANUP_FUNCTION(frame_context->window_manager->destroy_window_glfw()));
     }
 } // core

@@ -11,7 +11,6 @@
 
 struct RenderContext
 {
-    std::unique_ptr<platform::WindowManager> window_manager;
     std::unique_ptr<vulkanapp::DeviceManager> device_manager;
     std::unique_ptr<vulkanapp::SwapchainManager> swapchain_manager;
 

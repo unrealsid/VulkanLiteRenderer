@@ -101,7 +101,8 @@ void vulkanapp::SwapchainManager::cleanup()
         //cleanup_image_views();
 
         vkb::destroy_swapchain(swapchain);
-        vkb::destroy_surface(render_context.device_manager->get_instance(), render_context.window_manager->get_surface());
+        //TODO: Change to use frame_context
+        //vkb::destroy_surface(render_context.device_manager->get_instance(), render_context.window_manager->get_surface());
         swapchain = {};
     }
     
