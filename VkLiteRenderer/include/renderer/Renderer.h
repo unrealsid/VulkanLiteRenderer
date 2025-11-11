@@ -2,7 +2,8 @@
 
 #include <memory>
 
-#include "RenderPassBuilder.h"
+#include "RenderPass.h"
+#include "Subpass.h"
 #include "platform/WindowManager.h"
 #include "structs/engine/FrameContext.h"
 #include "structs/engine/RenderContext.h"
@@ -22,8 +23,6 @@ namespace core::renderer
         {
         }
 
-        std::unique_ptr<RenderPassBuilder> pass_builder;
-
         void renderer_init();
         void renderer_update() const;
 
@@ -33,6 +32,7 @@ namespace core::renderer
         }
 
     private:
+        std::unique_ptr<RenderPass> render_pass;
         std::unique_ptr<RenderContext> render_context;
         FrameContext* frame_context;
 
