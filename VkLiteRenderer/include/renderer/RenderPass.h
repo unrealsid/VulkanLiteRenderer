@@ -9,6 +9,7 @@ namespace core::renderer
     {
     public:
         explicit RenderPass(RenderContext* render_context, uint32_t max_frames_in_flight = 3);
+        void initialize_geometry_pass();
 
         std::vector<std::unique_ptr<Subpass>> subpasses;
 
@@ -19,8 +20,6 @@ namespace core::renderer
         bool draw_frame();
 
     private:
-        std::unique_ptr<Subpass> subpass_builder;
-
         vulkanapp::SwapchainManager* swapchain_manager{};
         vulkanapp::DeviceManager* device_manager{};
 

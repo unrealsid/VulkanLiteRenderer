@@ -17,12 +17,10 @@ namespace core::renderer
         device_manager = render_context->device_manager.get();
     }
 
-    void RenderPass::render_pass_init()
+    void RenderPass::initialize_geometry_pass()
     {
-        create_sync_objects();
-
-        subpass_builder = std::make_unique<Subpass>(render_context, max_frames_in_flight);
-        subpasses.push_back(std::move(subpass_builder));
+        std::unique_ptr<Subpass> geometry_pass = std::make_unique<Subpass>(render_context, max_frames_in_flight);
+        subpasses.push_back(std::move(geometry_pass));
 
         material::Material material("default", render_context);
         auto new_material = material.create_material("default");
@@ -36,31 +34,38 @@ namespace core::renderer
         for (int i = 0; i < max_frames_in_flight; i++)
         {
             pass.allocate_command_buffer(i)
-            .cache_active_command_buffer(i)
-            .begin_command_buffer_recording()
-            .set_present_image_transition(i, PresentationImageType::SwapChain)
-            .set_present_image_transition(i, PresentationImageType::DepthStencil)
-            .setup_color_attachment(i, { {0.1f, 0.1f, 0.1f, 1.0f} })
-            .setup_depth_attachment({ {1.0f, 0} })
-            .set_material(new_material)
-            .begin_rendering()
-            .record_draw_batches([&](VkCommandBuffer command_buffer, RenderContext* render_context, material::Material* material)
-            {
-                material->get_shader_object()->set_initial_state(render_context->dispatch_table, render_context->swapchain_manager->get_swapchain().extent, command_buffer,
-                                                                 Vertex::get_binding_description(), Vertex::get_attribute_descriptions(), render_context->swapchain_manager->get_swapchain().extent);
-                material->get_shader_object()->bind_material_shader(render_context->dispatch_table, command_buffer);
+                .cache_active_command_buffer(i)
+                .begin_command_buffer_recording()
+                .set_present_image_transition(i, PresentationImageType::SwapChain)
+                .set_present_image_transition(i, PresentationImageType::DepthStencil)
+                .setup_color_attachment(i, { {0.1f, 0.1f, 0.1f, 1.0f} })
+                .setup_depth_attachment({ {1.0f, 0} })
+                .set_material(new_material)
+                .begin_rendering()
+                .record_draw_batches([&](VkCommandBuffer command_buffer, RenderContext* render_context, material::Material* material)
+                {
+                    material->get_shader_object()->set_initial_state(render_context->dispatch_table, render_context->swapchain_manager->get_swapchain().extent, command_buffer,
+                                                                     Vertex::get_binding_description(), Vertex::get_attribute_descriptions(), render_context->swapchain_manager->get_swapchain().extent);
+                    material->get_shader_object()->bind_material_shader(render_context->dispatch_table, command_buffer);
 
-                //Passing Buffer Addresses
-                PushConstantBlock references{};
-                // Pass a pointer to the global matrix via a buffer device address
-                // references.scene_buffer_address = engine_context.renderer->get_gpu_scene_buffer().scene_buffer_address;
-                // references.material_params_address = engine_context.material_manager->get_material_params_address();
+                    //Passing Buffer Addresses
+                    PushConstantBlock references{};
+                    // Pass a pointer to the global matrix via a buffer device address
+                    // references.scene_buffer_address = engine_context.renderer->get_gpu_scene_buffer().scene_buffer_address;
+                    // references.material_params_address = engine_context.material_manager->get_material_params_address();
 
-                render_context->dispatch_table.cmdDraw(command_buffer, 3, 1, 0, 0);
-            })
-            .end_rendering()
-            .end_command_buffer_recording(i);
+                    render_context->dispatch_table.cmdDraw(command_buffer, 3, 1, 0, 0);
+                })
+                .end_rendering()
+                .end_command_buffer_recording(i);
         }
+    }
+
+    void RenderPass::render_pass_init()
+    {
+        create_sync_objects();
+
+        initialize_geometry_pass();
     }
 
    bool RenderPass::draw_frame()
