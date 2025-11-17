@@ -6,14 +6,14 @@
 #include "core/Types.h"
 #include "platform/WindowManager.h"
 /*
- * Stores frame data shared between the render and application thread.
+ * Stores engine data shared between the render and application thread.
  */
 
 using moodycamel::BlockingReaderWriterCircularBuffer;
 
-struct FrameContext
+struct EngineContext
 {
-    explicit FrameContext()= default;
+    explicit EngineContext()= default;
 
     std::unique_ptr<Semaphore> consume_semaphore;
     std::unique_ptr<Semaphore> continue_semaphore;

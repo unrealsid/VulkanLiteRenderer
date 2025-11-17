@@ -5,7 +5,7 @@
 
 #include "core/Application.h"
 #include "structs/engine/WindowCreateParams.h"
-#include "structs/engine/FrameContext.h"
+#include "structs/engine/EngineContext.h"
 #include "Config.inl"
 #include "platform/WindowManager.h"
 #include "renderer/Renderer.h"
@@ -15,34 +15,37 @@ namespace core
 {
     std::map<std::string, std::unique_ptr<Job>> Engine::jobs = {};
 
-    Engine::Engine(std::function<void(Application*)>&& p_application_init_callback, std::function<void(Application*)>&& p_application_update_callback) :
-        frame_context(nullptr),
+    Engine::Engine(std::function<void(Application*)>&& p_application_init_callback,
+        std::function<void(Application*)>&& p_application_update_callback) :
+
+        engine_context(nullptr),
         application_init_callback(std::move(p_application_init_callback)),
         application_update_callback(std::move(p_application_update_callback)){ }
 
-    void Engine::init_render_context()
+    void Engine::init_engine_context()
     {
-        frame_context = std::make_unique<FrameContext>();
+        engine_context = std::make_shared<EngineContext>();
     }
 
     void Engine::initialize_application_thread()
     {
         //Setup application thread
         create_job("application",
-            [&](FrameContext* p_render_context,
-            const std::function<void(Application*)>& p_application_init_callback,
-            const std::function<void(Application*)>& p_application_update_callback)
+            [](const std::shared_ptr<EngineContext>& p_engine_context,
+                const std::function<void(Application*)>& p_application_init_callback,
+                const std::function<void(Application*)>& p_application_update_callback)
         {
-            auto application = std::make_unique<Application>(p_render_context);
+            auto application = std::make_unique<Application>(p_engine_context);
             application->application_setup(p_application_init_callback, p_application_update_callback);
 
             //Application thread finishes
             threading::ThreadUtils::semaphore_post(jobs["application"]->semaphore_continue.get(), 1);
 
-            //Call app update after we finish setting up the apllication thread. Also, let rest of the engine continue with init
+            //Call app update after we finish setting up the application thread. Also, let rest of the engine continue with init
             application->application_update();
         },
-        frame_context.get(),
+        //Arguments to pass
+        std::ref(engine_context),
         application_init_callback,
         application_update_callback);
 
@@ -50,19 +53,19 @@ namespace core
         threading::ThreadUtils::semaphore_wait(jobs["application"]->semaphore_continue.get());
     }
 
-    void Engine::initialize_graphics_subsystem()
+    void Engine::initialize_graphics_thread()
     {
         //Setup graphics thread
-        create_job("rendering", []( FrameContext* p_frame_context)
+        create_job("rendering", [](std::shared_ptr<EngineContext> p_engine_context)
         {
-            const auto renderer = std::make_unique<renderer::Renderer>(p_frame_context);
+            const auto renderer = std::make_unique<renderer::Renderer>(std::move(p_engine_context), 2);
             renderer->renderer_init();
 
             //Post the semaphore here so the main thread can resume. We have finished initializing the graphics thread here
             threading::ThreadUtils::semaphore_post(jobs["rendering"]->semaphore_continue.get(), 1);
 
             renderer->renderer_update();
-        }, frame_context.get());
+        }, std::ref(engine_context));
 
         //Wait for the rendering thread to finish initializing
         threading::ThreadUtils::semaphore_wait(jobs["rendering"]->semaphore_continue.get());
@@ -70,11 +73,11 @@ namespace core
 
     void Engine::init()
     {
-        init_render_context();
+        init_engine_context();
 
         initialize_application_thread();
 
-        initialize_graphics_subsystem();
+        initialize_graphics_thread();
 
         std::cout << "\nEngine Setup" << std::endl;
     }
@@ -89,6 +92,6 @@ namespace core
         jobs["application"]->thread.join();
         jobs["rendering"]->thread.join();
 
-        vulkanapp::VulkanCleanupQueue::push_cleanup_function(CLEANUP_FUNCTION(frame_context->window_manager->destroy_window_glfw()));
+        vulkanapp::VulkanCleanupQueue::push_cleanup_function(CLEANUP_FUNCTION(engine_context->window_manager->destroy_window_glfw()));
     }
 } // core

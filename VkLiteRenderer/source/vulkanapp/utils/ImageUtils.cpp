@@ -196,9 +196,9 @@ void utils::ImageUtils::copy_image(RenderContext& engine_context, VkQueue queue,
     vmaDestroyBuffer(engine_context.device_manager->get_allocator(), srcBuffer.buffer, srcBuffer.allocation);
 }
 
-void utils::ImageUtils::copy_image_to_buffer(RenderContext& engine_context, Vk_Image src_image, GPU_Buffer& dst_buffer, VkCommandBuffer cmd_buffer, VkOffset3D image_offset)
+void utils::ImageUtils::copy_image_to_buffer(RenderContext& render_context, Vk_Image src_image, GPU_Buffer& dst_buffer, VkCommandBuffer cmd_buffer, VkOffset3D image_offset)
 {
-    auto dispatch_table = engine_context.dispatch_table;
+    auto dispatch_table = render_context.dispatch_table;
     
     // Transition image for transfer
     ImageUtils::image_layout_transition(
@@ -223,7 +223,7 @@ void utils::ImageUtils::copy_image_to_buffer(RenderContext& engine_context, Vk_I
     copy_region.imageSubresource.baseArrayLayer = 0;
     copy_region.imageSubresource.layerCount = 1;
     copy_region.imageOffset = image_offset;
-    auto extents = engine_context.swapchain_manager->get_swapchain_extent();
+    auto extents = render_context.swapchain_manager->get_extent();
     copy_region.imageExtent = {extents.width, extents.height, 1};
     
     dispatch_table.cmdCopyImageToBuffer(
@@ -259,7 +259,7 @@ void utils::ImageUtils::copy_image_to_buffer(RenderContext& engine_context, Vk_I
     buffer_barrier.offset = 0;
     buffer_barrier.size = VK_WHOLE_SIZE;
 
-    engine_context.dispatch_table.cmdPipelineBarrier(
+    render_context.dispatch_table.cmdPipelineBarrier(
         cmd_buffer,
         VK_PIPELINE_STAGE_TRANSFER_BIT,
         VK_PIPELINE_STAGE_HOST_BIT,

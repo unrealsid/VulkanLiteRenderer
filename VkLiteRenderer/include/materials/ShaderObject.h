@@ -6,11 +6,6 @@
 
 #include "VkBootstrapDispatch.h"
 
-namespace vulkan
-{
-    class SwapchainManager;
-}
-
 struct Init;
 
 namespace material
@@ -103,7 +98,7 @@ namespace material
 	template <size_t N>
 	void ShaderObject::set_initial_state(vkb::DispatchTable& disp, VkExtent2D viewport_extent, VkCommandBuffer cmd_buffer,
 	                                     VkVertexInputBindingDescription2EXT vertex_input_binding,
-	                                     std::array<VkVertexInputAttributeDescription2EXT, N> input_attribute_description, VkExtent2D scissor_extents, VkOffset2D scissor_offset = {.x = 0, .y = 0 })
+	                                     std::array<VkVertexInputAttributeDescription2EXT, N> input_attribute_description, VkExtent2D scissor_extents, VkOffset2D scissor_offset)
 	{
 		{
 			// Set viewport and scissor

@@ -5,6 +5,7 @@
 #include "materials/Material.h"
 #include "platform/WindowManager.h"
 #include "structs/engine/RenderContext.h"
+#include "structs/vulkan/GPU_Buffer.h"
 #include "structs/vulkan/Vk_Image.h"
 
 struct RenderContext;
@@ -21,6 +22,8 @@ namespace core::renderer
         //Gets the command buffer at the image ID when using double/triple buffering
         VkCommandBuffer* get_command_buffer(uint32_t image_id);
         Subpass& cache_active_command_buffer(uint32_t image_id);
+
+        void reset_command_pool();
 
         //Init functions
         Subpass& init_pass(bool use_max_frames);
@@ -62,7 +65,6 @@ namespace core::renderer
 
         //Store created Depth Stencils
         Vk_Image depth_stencil_image;
-        Vk_Image color_images;
 
         material::Material* material_to_use;
 

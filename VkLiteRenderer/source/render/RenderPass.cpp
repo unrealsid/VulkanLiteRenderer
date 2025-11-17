@@ -2,16 +2,18 @@
 #include "renderer/RenderPass.h"
 
 #include <iostream>
-
+#include <thread>
 #include "structs/vulkan/PushConstantBlock.h"
 #include "structs/vulkan/Vertex.h"
+#include "structs/engine/EngineContext.h"
 
 
 namespace core::renderer
 {
-    RenderPass::RenderPass(RenderContext* render_context, uint32_t max_frames_in_flight ) :
+    RenderPass::RenderPass(RenderContext* render_context, std::weak_ptr<EngineContext> engine_context, uint32_t max_frames_in_flight) :
         render_context(render_context),
-        max_frames_in_flight(max_frames_in_flight)
+        max_frames_in_flight(max_frames_in_flight),
+        engine_context(std::move(engine_context))
     {
         swapchain_manager = render_context->swapchain_manager.get();
         device_manager = render_context->device_manager.get();
@@ -44,8 +46,9 @@ namespace core::renderer
                 .begin_rendering()
                 .record_draw_batches([&](VkCommandBuffer command_buffer, RenderContext* render_context, material::Material* material)
                 {
-                    material->get_shader_object()->set_initial_state(render_context->dispatch_table, render_context->swapchain_manager->get_swapchain().extent, command_buffer,
-                                                                     Vertex::get_binding_description(), Vertex::get_attribute_descriptions(), render_context->swapchain_manager->get_swapchain().extent);
+                    auto extents = render_context->swapchain_manager->get_extent();
+                    material->get_shader_object()->set_initial_state(render_context->dispatch_table, extents, command_buffer,
+                                                                     Vertex::get_binding_description(), Vertex::get_attribute_descriptions(), extents, {0, 0});
                     material->get_shader_object()->bind_material_shader(render_context->dispatch_table, command_buffer);
 
                     //Passing Buffer Addresses
@@ -68,7 +71,17 @@ namespace core::renderer
         initialize_geometry_pass();
     }
 
-   bool RenderPass::draw_frame()
+    void RenderPass::reset_subpass_command_buffers()
+    {
+        for (const auto& subpass : subpasses)
+        {
+            subpass->reset_command_pool();
+        }
+
+        subpasses.clear();
+    }
+
+    bool RenderPass::draw_frame()
     {
         auto dispatch_table = render_context->dispatch_table;
         dispatch_table.waitForFences(1, &in_flight_fences[current_frame], VK_TRUE, UINT64_MAX);
@@ -77,7 +90,18 @@ namespace core::renderer
         VkResult result = dispatch_table.acquireNextImageKHR(swapchain_manager->get_swapchain(), UINT64_MAX, available_semaphores[current_frame], VK_NULL_HANDLE, &image_index);
         if (result == VK_ERROR_OUT_OF_DATE_KHR)
         {
-            return swapchain_manager->recreate_swapchain();
+            dispatch_table.deviceWaitIdle();
+            reset_subpass_command_buffers();
+
+            auto window_manager = engine_context.lock()->window_manager;
+
+            auto window_width = window_manager->get_window_width();
+            auto window_height = window_manager->get_window_height();
+            swapchain_manager->recreate_swapchain(window_width, window_height);
+
+            initialize_geometry_pass();
+
+            return true;
         }
 
         if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
@@ -99,8 +123,7 @@ namespace core::renderer
         VkSemaphore wait_semaphores[] = { available_semaphores[current_frame] };
         VkPipelineStageFlags wait_stages[] =
         {
-            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+           VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
         };
 
         submitInfo.waitSemaphoreCount = 1;
@@ -128,7 +151,7 @@ namespace core::renderer
         present_info.waitSemaphoreCount = 1;
         present_info.pWaitSemaphores = signal_semaphores;
 
-        VkSwapchainKHR swapChains[] = { swapchain_manager->get_swapchain().swapchain };
+        VkSwapchainKHR swapChains[] = { swapchain_manager->get_swapchain() };
         present_info.swapchainCount = 1;
         present_info.pSwapchains = swapChains;
 
@@ -137,8 +160,20 @@ namespace core::renderer
         result = dispatch_table.queuePresentKHR(device_manager->get_present_queue(), &present_info);
         if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
         {
-            return swapchain_manager->recreate_swapchain();
+            dispatch_table.deviceWaitIdle();
+            reset_subpass_command_buffers();
+
+            auto window_manager = engine_context.lock()->window_manager;
+
+            auto window_width = window_manager->get_window_width();
+            auto window_height = window_manager->get_window_height();
+            swapchain_manager->recreate_swapchain(window_width, window_height);
+
+            initialize_geometry_pass();
+
+            return true;
         }
+
         if (result != VK_SUCCESS)
         {
             std::cout << "failed to present swapchain image\n";
@@ -154,7 +189,7 @@ namespace core::renderer
        available_semaphores.resize(max_frames_in_flight);
        finished_semaphores.resize(max_frames_in_flight);
        in_flight_fences.resize(max_frames_in_flight);
-       image_in_flight.resize(swapchain_manager->get_swapchain().image_count, VK_NULL_HANDLE);
+       image_in_flight.resize(swapchain_manager->get_image_count(), VK_NULL_HANDLE);
 
        VkSemaphoreCreateInfo semaphore_info = {};
        semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;

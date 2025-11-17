@@ -1,16 +1,16 @@
 ﻿#pragma once
 #include <cstdint>
 #include <functional>
-#include "structs/engine/FrameContext.h"
-
+#include <utility>
+#include "structs/engine/EngineContext.h"
 
 namespace core
 {
     class Application
     {
     public:
-        explicit Application(FrameContext* render_context)
-            : frame_context(render_context)
+        explicit Application(std::shared_ptr<EngineContext> engine_context)
+            : engine_context(std::move(engine_context))
         {
         }
 
@@ -19,10 +19,10 @@ namespace core
         void application_update();
 
     private:
-        FrameContext* frame_context;
+        std::shared_ptr<EngineContext> engine_context;
 
         //Update function
         std::function<void(Application*)> application_update_callback;
 
     };
-} // core
+}

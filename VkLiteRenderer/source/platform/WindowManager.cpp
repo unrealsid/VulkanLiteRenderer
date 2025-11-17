@@ -16,6 +16,10 @@ namespace platform
 
         window = glfwCreateWindow(window_create_params.window_width, window_create_params.window_height,
                                   window_create_params.window_title, nullptr, nullptr);
+
+        update_window_dimensions();
+        setup_window_resize_callback();
+
         return window;
     }
 
@@ -54,5 +58,34 @@ namespace platform
     VkSurfaceKHR WindowManager::get_surface()
     {
         return surface;
+    }
+
+    void WindowManager::update_window_dimensions()
+    {
+        if (window != nullptr)
+        {
+            int width = 0, height = 0;
+            glfwGetWindowSize(window, &width, &height);
+            m_window_width = static_cast<uint32_t>(width);
+            m_window_height = static_cast<uint32_t>(height);
+        }
+    }
+
+    void WindowManager::setup_window_resize_callback()
+    {
+        if (window != nullptr)
+        {
+            glfwSetWindowUserPointer(window, this);
+            glfwSetWindowSizeCallback(window, glfw_window_resize_callback);
+        }
+    }
+
+    void WindowManager::glfw_window_resize_callback(GLFWwindow* glfw_window, int width, int height)
+    {
+        auto* window_manager = static_cast<WindowManager*>(glfwGetWindowUserPointer(glfw_window));
+        if (window_manager != nullptr)
+        {
+            window_manager->update_window_dimensions();
+        }
     }
 }

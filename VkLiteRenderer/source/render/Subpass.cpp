@@ -29,6 +29,19 @@ namespace core::renderer
         return *this;
     }
 
+    void Subpass::reset_command_pool()
+    {
+        if (command_pool != VK_NULL_HANDLE)
+        {
+            render_context->dispatch_table.destroyCommandPool(command_pool, 0);
+            command_buffers.clear();
+        }
+
+        render_context->dispatch_table.destroyImage(depth_stencil_image.image, nullptr);
+        depth_stencil_image = {};
+    }
+
+
     Subpass& Subpass::init_pass(bool use_max_frames)
     {
         if (use_max_frames)
@@ -57,7 +70,7 @@ namespace core::renderer
     {
         utils::RenderUtils::get_supported_depth_stencil_format(render_context->device_manager->get_physical_device(), &depth_stencil_image.format);
         utils::RenderUtils::create_depth_stencil_image(*render_context,
-                                                       render_context->swapchain_manager->get_swapchain().extent,
+                                                       render_context->swapchain_manager->get_extent(),
                                                        render_context->device_manager->get_allocator(),
                                                        depth_stencil_image);
 
@@ -103,10 +116,11 @@ namespace core::renderer
 
         case PresentationImageType::SwapChain:
             {
-                auto swapchain_ref = render_context->swapchain_manager->get_swapchain();
-                auto image = swapchain_ref.get_images().value()[image_id];
+            auto swapchain_ref = render_context->swapchain_manager.get();
+                auto image = swapchain_ref->get_images()[image_id];
+
                 utils::ImageUtils::image_layout_transition(*active_command_buffer,
-                                                image,
+                                                image.image,
                                                VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
                                                VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
                                                0,
@@ -143,18 +157,18 @@ namespace core::renderer
         assert(active_command_buffer);
 #endif
 
-        auto swapchain_ref = render_context->swapchain_manager->get_swapchain();
+        auto swapchain_ref = render_context->swapchain_manager.get();
         color_attachment_info = { VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO };
 
         //TODO: Bounds check
 
         color_attachment_info.pNext        = VK_NULL_HANDLE;
-        color_attachment_info.imageView    = swapchain_ref.get_image_views().value()[image];
+        color_attachment_info.imageView    = swapchain_ref->get_images()[image].image_view;
         color_attachment_info.imageLayout  = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
         color_attachment_info.resolveMode  = VK_RESOLVE_MODE_NONE;
         color_attachment_info.loadOp       = VK_ATTACHMENT_LOAD_OP_CLEAR;
         color_attachment_info.storeOp      = VK_ATTACHMENT_STORE_OP_STORE;
-        color_attachment_info.clearValue   = clear_value; ;
+        color_attachment_info.clearValue   = clear_value;
 
         return *this;
     }
@@ -184,10 +198,8 @@ namespace core::renderer
         assert(active_command_buffer && swapchain_manager);
 #endif
 
-        auto swapchain_ref = swapchain_manager->get_swapchain();
-
         // Render area
-        VkRect2D render_area = { {0, 0}, {swapchain_ref.extent.width, swapchain_ref.extent.height} };
+        VkRect2D render_area = { {0, 0}, {swapchain_manager->get_extent().width, swapchain_manager->get_extent().height} };
 
         // Dynamic rendering info
         VkRenderingInfoKHR render_info = { VK_STRUCTURE_TYPE_RENDERING_INFO_KHR };
@@ -223,7 +235,7 @@ namespace core::renderer
         utils::ImageUtils::image_layout_transition
         (
              *active_command_buffer,                            // Command buffer
-             render_context->swapchain_manager->get_swapchain().get_images().value()[image],    // Swapchain image
+             render_context->swapchain_manager->get_images()[image].image,    // Swapchain image
              VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, // Source pipeline stage
              VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,     // Destination pipeline stage
              VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,     // Source access mask

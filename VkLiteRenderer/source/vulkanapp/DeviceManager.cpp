@@ -1,19 +1,17 @@
 #include "vulkanapp/DeviceManager.h"
 
 #include <iostream>
+#include <utility>
 #include <vulkan/vulkan.h>
 
 #include "structs/engine/RenderContext.h"
 #include "vulkanapp/VulkanCleanupQueue.h"
 #include "vulkanapp/feature_activator/VulkanFeatureActivator.h"
 
-vulkanapp::DeviceManager::DeviceManager(RenderContext& p_render_context, FrameContext* frame_context): surface(nullptr), compute_queue(nullptr),
+vulkanapp::DeviceManager::DeviceManager(RenderContext& p_render_context, std::shared_ptr<EngineContext> p_engine_context): surface(nullptr), compute_queue(nullptr),
                                                                                                        graphics_queue(nullptr), present_queue(nullptr),
                                                                                                        vma_allocator(nullptr), render_context(p_render_context),
-                                                                                                        frame_context(frame_context)
-{
-}
-
+                                                                                                        engine_context(std::move(p_engine_context)){ }
 vulkanapp::DeviceManager::~DeviceManager()= default;
 
 bool vulkanapp::DeviceManager::device_init()
@@ -50,7 +48,7 @@ bool vulkanapp::DeviceManager::device_init()
     features.geometryShader = VK_FALSE;
     features.tessellationShader = VK_FALSE;
 
-    VkSurfaceKHR surface = frame_context->window_manager->create_surface_glfw(instance_ret.value().instance, nullptr);
+    surface = engine_context->window_manager->create_surface_glfw(instance_ret.value().instance, nullptr);
 
     vkb::PhysicalDeviceSelector phys_device_selector(instance);
     auto phys_device_ret = phys_device_selector

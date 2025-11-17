@@ -16,17 +16,21 @@ namespace core::renderer
         utils::MemoryUtils::create_vma_allocator(*render_context->device_manager);
     }
 
-    void Renderer::create_swapchain()
+    void Renderer::create_swapchain() const
     {
-        render_context->swapchain_manager = std::make_unique<vulkanapp::SwapchainManager>(*render_context);
-        render_context->swapchain_manager->create_swapchain();
-
-        max_frames_in_flight = render_context->swapchain_manager->get_swapchain().image_count;
+        render_context->swapchain_manager = std::make_unique<vulkanapp::SwapchainManager>(render_context.get());
+        render_context->swapchain_manager->initialize(render_context->device_manager->get_physical_device(),
+                                                      render_context->device_manager->get_device(),
+                                                      //Windowing
+                                                      render_context->device_manager->get_surface(),
+                                                      2,
+                                                      engine_context->window_manager->get_window_width(),
+                                                      engine_context->window_manager->get_window_height());
     }
 
     void Renderer::create_device() const
     {
-        render_context->device_manager = std::make_unique<vulkanapp::DeviceManager>(*render_context, frame_context);
+        render_context->device_manager = std::make_unique<vulkanapp::DeviceManager>(*render_context, engine_context);
         render_context->device_manager->device_init();
         render_context->device_manager->init_queues();
     }

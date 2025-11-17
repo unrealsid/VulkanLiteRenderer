@@ -11,7 +11,6 @@
 
 namespace core::renderer
 {
-
     void Renderer::renderer_init()
     {
         std::cout << "Renderer Setup" << std::endl;
@@ -19,7 +18,7 @@ namespace core::renderer
         init_vulkan();
         init_cleanup();
 
-        render_pass = std::make_unique<RenderPass>(render_context.get());
+        render_pass = std::make_unique<RenderPass>(render_context.get(), engine_context, 2);
         render_pass->render_pass_init();
 
         std::cout << "Done";
@@ -27,10 +26,11 @@ namespace core::renderer
 
     void Renderer::renderer_update() const
     {
-        std::cout << "\nFrame Contex can render: " << frame_context->start_rendering;
+        std::cout << "\nFrame Context can render: " << engine_context->start_rendering;
         std::cout << "Renderer Update" << std::endl;
 
-        if (frame_context->start_rendering)
+        //TODO: Change this.
+        if (engine_context->start_rendering)
         {
             while (true)
             {

@@ -8,7 +8,7 @@ namespace core::renderer
     class RenderPass
     {
     public:
-        explicit RenderPass(RenderContext* render_context, uint32_t max_frames_in_flight = 3);
+        RenderPass(RenderContext* render_context, std::weak_ptr<EngineContext> engine_context, uint32_t max_frames_in_flight = 2);
         void initialize_geometry_pass();
 
         std::vector<std::unique_ptr<Subpass>> subpasses;
@@ -16,6 +16,7 @@ namespace core::renderer
         [[nodiscard]] uint32_t get_max_frames_in_flight() const { return max_frames_in_flight; }
 
         void render_pass_init();
+        void reset_subpass_command_buffers();
 
         bool draw_frame();
 
@@ -30,6 +31,7 @@ namespace core::renderer
         std::vector<VkFence> image_in_flight;
 
         RenderContext* render_context{};
+        std::weak_ptr<EngineContext> engine_context;
 
         uint32_t max_frames_in_flight{};
 

@@ -3,7 +3,7 @@
 #include <vma/vk_mem_alloc.h>
 #include <VkBootstrap.h>
 
-#include "structs/engine/FrameContext.h"
+#include "structs/engine/EngineContext.h"
 
 struct RenderContext;
 
@@ -13,7 +13,7 @@ namespace vulkanapp
     class DeviceManager
     {
     public:
-        DeviceManager(RenderContext& p_render_context, FrameContext* frame_context);
+        DeviceManager(RenderContext& p_render_context, std::shared_ptr<EngineContext> p_engine_context);
         ~DeviceManager();
         
         bool device_init();
@@ -33,7 +33,7 @@ namespace vulkanapp
         VmaAllocator vma_allocator;
 
         RenderContext& render_context;
-        FrameContext* frame_context;
+        std::shared_ptr<EngineContext> engine_context;
         
     public:
         [[nodiscard]] vkb::Instance get_instance() const { return instance; }
