@@ -41,11 +41,11 @@ namespace core
             //Application thread finishes
             threading::ThreadUtils::semaphore_post(jobs["application"]->semaphore_continue.get(), 1);
 
-            //Call app update after we finish setting up the application thread. Also, let rest of the engine continue with init
+            //Call app update after we finish setting up the application thread. Also, let the rest of the engine continue with init
             application->application_update();
         },
         //Arguments to pass
-        std::ref(engine_context),
+        std::ref(engine_context), //pass engine context by ref since the function will otherwise pass it by value and I dont want to increase the ref counter here.
         application_init_callback,
         application_update_callback);
 
@@ -65,7 +65,7 @@ namespace core
             threading::ThreadUtils::semaphore_post(jobs["rendering"]->semaphore_continue.get(), 1);
 
             renderer->renderer_update();
-        }, std::ref(engine_context));
+        }, std::ref(engine_context)); //pass engine context by ref since the function will otherwise pass it by value and I dont want to increase the ref counter here.
 
         //Wait for the rendering thread to finish initializing
         threading::ThreadUtils::semaphore_wait(jobs["rendering"]->semaphore_continue.get());

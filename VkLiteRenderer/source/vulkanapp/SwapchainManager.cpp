@@ -110,6 +110,11 @@ namespace vulkanapp
     {
         dispatch_table.deviceWaitIdle();
 
+        while (window_width == 0 || window_height == 0)
+        {
+            //TODO: Stop resizing as long as either width or height is zero
+        }
+
         destroy_image_views();
         destroy_swapchain();
 

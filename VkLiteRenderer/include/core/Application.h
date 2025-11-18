@@ -3,6 +3,7 @@
 #include <functional>
 #include <utility>
 #include "structs/engine/EngineContext.h"
+#include "Types.h"
 
 namespace core
 {
@@ -14,15 +15,15 @@ namespace core
         {
         }
 
-        void application_setup(const std::function<void(Application*)>& p_application_init_callback,
-                               const std::function<void(Application*)>& p_application_update_callback);
+        void application_setup(const ApplicationFunc& p_application_init_callback,
+                               const ApplicationFunc& p_application_update_callback);
         void application_update();
 
     private:
         std::shared_ptr<EngineContext> engine_context;
 
         //Update function
-        std::function<void(Application*)> application_update_callback;
+        ApplicationFunc application_update_callback;
 
     };
 }

@@ -21,8 +21,8 @@ namespace core
         Engine() = default;
 
         //Constructor used to pass custom functions to initialize application behavior and application update
-        Engine(std::function<void(Application*)>&& p_application_init_callback,
-               std::function<void(Application*)>&& p_application_update_callback);
+        Engine(ApplicationFunc&& p_application_init_callback,
+               ApplicationFunc&& p_application_update_callback);
 
         template<typename Func, typename... Args>
         static Job* create_job(const std::string& job_name, Func&& thread_func, Args&&... thread_args)
@@ -43,8 +43,8 @@ namespace core
         std::shared_ptr<EngineContext> engine_context;
 
         //Callbacks to be set while setting up the engine
-        std::function<void(Application*)> application_init_callback;
-        std::function<void(Application*)> application_update_callback;
+        ApplicationFunc application_init_callback;
+        ApplicationFunc application_update_callback;
 
         static std::map<std::string, std::unique_ptr<Job>> jobs;
 

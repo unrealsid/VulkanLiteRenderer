@@ -6,8 +6,8 @@
 
 namespace core
 {
-    void Application::application_setup(const std::function<void(Application*)>& p_application_init_callback,
-                                        const std::function<void(Application*)>& p_application_update_callback)
+    void Application::application_setup(const ApplicationFunc& p_application_init_callback,
+                                        const ApplicationFunc& p_application_update_callback)
     {
         std::cout << "Application Setup" << std::endl;
         p_application_init_callback(this);
